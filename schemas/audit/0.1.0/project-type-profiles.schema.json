@@ -1,0 +1,59 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://1ststep.ai/os-audit/schemas/0.1.0/project-type-profiles.schema.json",
+  "title": "ProjectTypeProfiles",
+  "description": "Audit project types: derivation from upstream ProjectProfile fields, domain weights (0 = excluded), per-control multipliers and applicability overrides. Multiple matched types combine by MAX (weights, multipliers) and UNION (applicability).",
+  "type": "object",
+  "required": ["kind", "schemaVersion", "profilesVersion", "combination", "domainDefaults", "profiles"],
+  "additionalProperties": false,
+  "properties": {
+    "kind": { "const": "ProjectTypeProfiles" },
+    "schemaVersion": { "$ref": "audit-common.schema.json#/$defs/schemaVersion" },
+    "profilesVersion": { "$ref": "audit-common.schema.json#/$defs/semver" },
+    "combination": { "const": "MAX_WEIGHT_UNION_APPLICABILITY" },
+    "domainDefaults": { "$ref": "#/$defs/domainWeights" },
+    "profiles": {
+      "type": "array", "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["id", "title", "derivation", "domainWeights", "controlMultipliers", "excludeControls", "launchBlockerDomains"],
+        "properties": {
+          "id": { "$ref": "audit-common.schema.json#/$defs/projectTypeId" },
+          "title": { "type": "string", "maxLength": 100 },
+          "derivation": {
+            "type": "object",
+            "properties": {
+              "all": { "type": "array", "minItems": 1, "items": { "$ref": "audit-common.schema.json#/$defs/condition" } },
+              "any": { "type": "array", "minItems": 1, "items": { "$ref": "audit-common.schema.json#/$defs/condition" } }
+            },
+            "anyOf": [{ "required": ["all"] }, { "required": ["any"] }],
+            "additionalProperties": false
+          },
+          "domainWeights": { "$ref": "#/$defs/domainWeightOverrides" },
+          "controlMultipliers": {
+            "type": "object",
+            "propertyNames": { "$ref": "audit-common.schema.json#/$defs/controlId" },
+            "additionalProperties": { "type": "number", "minimum": 0.5, "maximum": 3 }
+          },
+          "excludeControls": { "type": "array", "uniqueItems": true, "items": { "$ref": "audit-common.schema.json#/$defs/controlId" } },
+          "launchBlockerDomains": { "type": "array", "uniqueItems": true, "items": { "$ref": "audit-common.schema.json#/$defs/domain" } }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "$defs": {
+    "weight": { "type": "integer", "minimum": 0, "maximum": 5 },
+    "domainWeights": {
+      "type": "object",
+      "propertyNames": { "$ref": "audit-common.schema.json#/$defs/domain" },
+      "additionalProperties": { "$ref": "#/$defs/weight" },
+      "minProperties": 33
+    },
+    "domainWeightOverrides": {
+      "type": "object",
+      "propertyNames": { "$ref": "audit-common.schema.json#/$defs/domain" },
+      "additionalProperties": { "$ref": "#/$defs/weight" }
+    }
+  }
+}

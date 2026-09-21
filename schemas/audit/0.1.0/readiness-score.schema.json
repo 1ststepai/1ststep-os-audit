@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://1ststep.ai/os-audit/schemas/0.1.0/readiness-score.schema.json",
+  "title": "ReadinessScore",
+  "description": "Overall readiness for one run. Reproducible: recomputing from the pinned versions and the hashed inputs must yield identical numbers. Stored once per run; never recomputed in place.",
+  "type": "object",
+  "required": ["kind", "schemaVersion", "runId", "targetId", "snapshotRole", "scoredAt", "versions", "projectTypes", "inputsHash", "dimensions", "uncappedScore", "caps", "score", "label", "launchBlocked", "launchBlockerFindingIds", "acceptedRiskFindingIds", "confidence"],
+  "additionalProperties": false,
+  "properties": {
+    "kind": { "const": "ReadinessScore" },
+    "schemaVersion": { "$ref": "audit-common.schema.json#/$defs/schemaVersion" },
+    "runId": { "$ref": "audit-common.schema.json#/$defs/runId" },
+    "targetId": { "$ref": "audit-common.schema.json#/$defs/targetId" },
+    "snapshotRole": { "enum": ["BASELINE", "CURRENT"] },
+    "scoredAt": { "$ref": "audit-common.schema.json#/$defs/timestamp", "description": "Also the reference time for evidence freshness." },
+    "versions": { "$ref": "audit-run.schema.json#/$defs/versions" },
+    "projectTypes": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "$ref": "audit-common.schema.json#/$defs/projectTypeId" } },
+    "inputsHash": { "$ref": "audit-common.schema.json#/$defs/sha256", "description": "sha256 of canonical JSON of scoring inputs (see SCORING_MODEL.md §Reproducibility)." },
+    "dimensions": {
+      "type": "array",
+      "items": {
+        "type": "object", "required": ["domain", "weight", "score"],
+        "properties": {
+          "domain": { "$ref": "audit-common.schema.json#/$defs/domain" },
+          "weight": { "type": "number", "minimum": 0 },
+          "score": { "$ref": "audit-common.schema.json#/$defs/scoreValue" }
+        },
+        "additionalProperties": false
+      }
+    },
+    "uncappedScore": { "$ref": "audit-common.schema.json#/$defs/scoreValue" },
+    "caps": { "type": "array", "items": { "$ref": "dimension-score.schema.json#/$defs/cap" } },
+    "score": { "$ref": "audit-common.schema.json#/$defs/scoreValue" },
+    "label": { "enum": ["STRONG", "GOOD_WITH_MINOR_GAPS", "MATERIAL_GAPS", "NOT_RELEASE_READY", "HIGH_RISK_RECOVERY_REQUIRED"] },
+    "launchBlocked": { "type": "boolean", "description": "Overrides the label for release decisions regardless of numeric score." },
+    "launchBlockerFindingIds": { "type": "array", "uniqueItems": true, "items": { "$ref": "audit-common.schema.json#/$defs/findingId" } },
+    "acceptedRiskFindingIds": { "type": "array", "uniqueItems": true, "items": { "$ref": "audit-common.schema.json#/$defs/findingId" } },
+    "confidence": {
+      "type": "object",
+      "required": ["level", "strongEvidenceWeightRatio", "unverifiedControlCount", "launchBlockerControlsEvidenced"],
+      "properties": {
+        "level": { "enum": ["HIGH", "MEDIUM", "LOW"] },
+        "strongEvidenceWeightRatio": { "type": "number", "minimum": 0, "maximum": 1 },
+        "unverifiedControlCount": { "type": "integer", "minimum": 0 },
+        "launchBlockerControlsEvidenced": { "type": "boolean" }
+      },
+      "additionalProperties": false
+    }
+  },
+  "if": { "properties": { "launchBlockerFindingIds": { "minItems": 1 } } },
+  "then": { "properties": { "launchBlocked": { "const": true } } }
+}

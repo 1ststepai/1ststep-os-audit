@@ -1,0 +1,108 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://1ststep.ai/os-audit/schemas/0.1.0/audit-run.schema.json",
+  "title": "AuditRun",
+  "description": "One execution of the audit pipeline against one snapshot. BASELINE runs score the baseline snapshot; RE_AUDIT and VERIFICATION runs score a CURRENT snapshot and reference the baseline. Every run pins the registry/scoring/upstream versions it used so its scores are reproducible.",
+  "type": "object",
+  "required": ["kind", "schemaVersion", "id", "targetId", "runType", "modes", "snapshotId", "baselineId", "scope", "agents", "stages", "gates", "status", "startedAt", "blockers"],
+  "additionalProperties": false,
+  "properties": {
+    "kind": { "const": "AuditRun" },
+    "schemaVersion": { "$ref": "audit-common.schema.json#/$defs/schemaVersion" },
+    "id": { "$ref": "audit-common.schema.json#/$defs/runId" },
+    "targetId": { "$ref": "audit-common.schema.json#/$defs/targetId" },
+    "runType": { "enum": ["BASELINE", "RE_AUDIT", "VERIFICATION"] },
+    "modes": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "$ref": "audit-common.schema.json#/$defs/auditMode" } },
+    "snapshotId": { "$ref": "audit-common.schema.json#/$defs/baselineId" },
+    "baselineId": { "$ref": "audit-common.schema.json#/$defs/baselineId" },
+    "scope": {
+      "type": "object",
+      "required": ["domains", "excludedDomains", "versions"],
+      "properties": {
+        "domains": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "$ref": "audit-common.schema.json#/$defs/domain" } },
+        "excludedDomains": {
+          "type": "array",
+          "items": {
+            "type": "object", "required": ["domain", "reason"],
+            "properties": { "domain": { "$ref": "audit-common.schema.json#/$defs/domain" }, "reason": { "type": "string", "minLength": 1, "maxLength": 1000 } },
+            "additionalProperties": false
+          }
+        },
+        "versions": { "$ref": "#/$defs/versions" }
+      },
+      "additionalProperties": false
+    },
+    "agents": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["agentId", "role", "promptVersion"],
+        "properties": {
+          "agentId": { "type": "string", "pattern": "^[a-z][a-z0-9-]{1,63}$" },
+          "role": { "enum": ["ORCHESTRATOR", "DISCOVERY", "DOMAIN_AUDITOR", "NORMALIZER", "RECOVERY_PLANNER", "VERIFIER"] },
+          "model": { "type": "string", "maxLength": 100 },
+          "promptVersion": { "$ref": "audit-common.schema.json#/$defs/semver" }
+        },
+        "additionalProperties": false
+      }
+    },
+    "stages": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["name", "status"],
+        "properties": {
+          "name": { "enum": ["INTAKE", "DISCOVER", "SNAPSHOT", "EXECUTE", "EXTERNAL_EVIDENCE", "DOMAIN_ASSESS", "NORMALIZE", "SCORE", "PLAN", "REPORT", "FINALIZE"] },
+          "status": { "enum": ["PENDING", "RUNNING", "DONE", "FAILED", "SKIPPED", "BLOCKED"] },
+          "inputsHash": { "$ref": "audit-common.schema.json#/$defs/sha256" },
+          "outputsHash": { "$ref": "audit-common.schema.json#/$defs/sha256" },
+          "startedAt": { "$ref": "audit-common.schema.json#/$defs/timestamp" },
+          "finishedAt": { "$ref": "audit-common.schema.json#/$defs/timestamp" },
+          "reason": { "type": "string", "maxLength": 1000 }
+        },
+        "additionalProperties": false
+      }
+    },
+    "gates": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["gate", "result", "evaluatedAt", "evidence"],
+        "properties": {
+          "gate": { "$ref": "audit-common.schema.json#/$defs/gate" },
+          "result": { "$ref": "audit-common.schema.json#/$defs/gateResult" },
+          "evaluatedAt": { "$ref": "audit-common.schema.json#/$defs/timestamp" },
+          "evidence": { "type": "string", "minLength": 1, "maxLength": 4000 }
+        },
+        "additionalProperties": false
+      }
+    },
+    "status": { "enum": ["PLANNED", "RUNNING", "COMPLETED", "BLOCKED", "FAILED", "FINALIZED"] },
+    "startedAt": { "$ref": "audit-common.schema.json#/$defs/timestamp" },
+    "finishedAt": { "$ref": "audit-common.schema.json#/$defs/timestamp" },
+    "blockers": {
+      "type": "array",
+      "items": {
+        "type": "object", "required": ["code", "description"],
+        "properties": { "code": { "type": "string", "pattern": "^[A-Z][A-Z0-9_]{2,63}$" }, "description": { "type": "string", "maxLength": 2000 } },
+        "additionalProperties": false
+      }
+    }
+  },
+  "allOf": [
+    { "if": { "properties": { "runType": { "const": "BASELINE" } } }, "then": { "description": "A baseline run scores its own baseline snapshot." } }
+  ],
+  "$defs": {
+    "versions": {
+      "type": "object",
+      "required": ["controlRegistry", "scoringModel", "projectTypeProfiles", "upstreamLockHash"],
+      "properties": {
+        "controlRegistry": { "$ref": "audit-common.schema.json#/$defs/semver" },
+        "scoringModel": { "$ref": "audit-common.schema.json#/$defs/semver" },
+        "projectTypeProfiles": { "$ref": "audit-common.schema.json#/$defs/semver" },
+        "upstreamLockHash": { "$ref": "audit-common.schema.json#/$defs/sha256" }
+      },
+      "additionalProperties": false
+    }
+  }
+}

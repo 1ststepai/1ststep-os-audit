@@ -1,0 +1,33 @@
+{
+  "kind": "UpstreamLock",
+  "description": "Pins the 1stStep OS contract this audit build was validated against. Referenced by $id; resolved from localPath. A hash mismatch fails tools/validate_foundation.py until the lock is deliberately bumped (--update-lock) and controls re-validated.",
+  "upstream": "1stStep OS",
+  "localPath": "../1stStep OS",
+  "osSchemaVersion": "0.1.0",
+  "capabilityTaxonomyVersion": "0.1.0",
+  "capturedAt": "2026-09-13T19:35:11Z",
+  "upstreamStatus": "READY_FOR_ARCHITECTURE_CYCLE (upstream schemas were actively changing during capture)",
+  "files": {
+    "schemas/0.1.0/automation-definition.schema.json": "sha256:036a28f733d1a81377fca5aa3da28b9c0e721c6f79bcbe068f40448fc571fddb",
+    "schemas/0.1.0/capability-definition.schema.json": "sha256:9047e59dcb0dae1df62b68a6f9bda1af20bbc8ecf92c3ebc8035f60c701d8321",
+    "schemas/0.1.0/capability-registry.schema.json": "sha256:29d2750c14c3b402441e72200585faa08dde2522e7913933bc8ae2ecbe24b0fb",
+    "schemas/0.1.0/common.schema.json": "sha256:1cf79b5d4a954269135ce85bd47ea9ca03e3b8f11c2737ea16222caf42c27cda",
+    "schemas/0.1.0/consent-record.schema.json": "sha256:151ab15114d25032706255ddc410a37e3da0d443fb2e23ba1cb81ed3dd940221",
+    "schemas/0.1.0/external-action.schema.json": "sha256:2bfdbb67f4da2fc0ca18de0f4d10f560c54693a30085fff559a0549b7b277314",
+    "schemas/0.1.0/finding.schema.json": "sha256:f19051464242839050ffbca7e23e6ec887ed7b9e8f9137fd8ccfcc6e3ce199e2",
+    "schemas/0.1.0/gate-result.schema.json": "sha256:97d8dba199ba14213259cfe1f027101b41be0e3618db5151f4dd2d90fbddd6b9",
+    "schemas/0.1.0/handoff.schema.json": "sha256:4b7168203e287a44e15a65081d9e45036b8b127f622df008a1a99ffeab6372c1",
+    "schemas/0.1.0/llm-connection.schema.json": "sha256:03d8ac2df45fb0b1bb6be32921a85796469e678afbf00b147a566008dbf9fda4",
+    "schemas/0.1.0/media-asset.schema.json": "sha256:33fa7dda977d9373beaf54e6ce4bead13c61afb5789eaa21d36747493cee18aa",
+    "schemas/0.1.0/model-provider.schema.json": "sha256:3db15f28a41cd9e5966b3465487f60a2f10cda55340667932b14af90ace508ee",
+    "schemas/0.1.0/module-definition.schema.json": "sha256:78cd4253370283cd9b1909c44ae3b2676acacbf929c01f8e9fdab8b12941671c",
+    "schemas/0.1.0/module-registry.schema.json": "sha256:a96d531fb5a970ede4f16752087908150fb7a3053f0deaf7674550a0c72fc228",
+    "schemas/0.1.0/project-os-manifest.schema.json": "sha256:28e1147bf58de34213e1234ab5e84298071fba377cbae429ae7723b71a7d9fd3",
+    "schemas/0.1.0/project-profile.schema.json": "sha256:6d75d92b228cad9cab209a1648c65f693e0ea79a36d76c38d9bac174c5263447",
+    "schemas/0.1.0/provider-policy.schema.json": "sha256:53d909c030777c5c5fa29fbb1ff67207e34af2a6642c114331ca91801ea14ee4",
+    "schemas/0.1.0/recommendation.schema.json": "sha256:8994d4231a65cfebb57dda16152ec2606a0b5c060e13976f2177d1c8e0ce93d3",
+    "schemas/0.1.0/research-claim.schema.json": "sha256:021c4a9892daf71330970db7305b801750446bd47f31e1a7207644032478599f",
+    "schemas/0.1.0/tool-provider.schema.json": "sha256:a49ffe73f5009227039adc1afcfe09f8089a039cd6c60cdaa7afee280b6c9c7f",
+    ".project-os/capability-taxonomy.json": "sha256:a64d3cc99faa5f34b788bc4235a41f67b3059dae66eece748410ccec73af0540"
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "kind": "GateResult",
+  "schemaVersion": "0.1.0",
+  "id": "audit.G1.foundation-cycle-0",
+  "gate": "G1",
+  "subject": { "type": "CYCLE", "ref": "1stStep OS Audit / foundation-cycle-0" },
+  "result": "PASS",
+  "evaluatedAt": "2026-09-13T05:30:00Z",
+  "evaluator": { "actorType": "AGENT", "actorId": "claude-code" },
+  "criteria": [
+    { "id": "G1.C1-architecture", "description": "ADR covers 14 required areas and MVP scope.", "result": "PASS", "evidence": [{ "state": "OBSERVED", "description": "Decision table and MVP scope present.", "ref": "ARCHITECTURE.md" }] },
+    { "id": "G1.C2-schemas", "description": "Required schemas exist and are valid JSON Schema 2020-12.", "result": "PASS", "evidence": [{ "state": "CONFIRMED", "description": "15 audit + 18 upstream schemas pass metaschema check.", "ref": "tools/validate_foundation.py" }] },
+    { "id": "G1.C3-controls", "description": "Control registry deterministic, covers 33 domains, capability refs resolve upstream.", "result": "PASS", "evidence": [{ "state": "CONFIRMED", "description": "52 controls validated; referential integrity checked against pinned taxonomy.", "ref": ".project-os-audit/controls.json" }] },
+    { "id": "G1.C4-project-types", "description": "Weights/applicability for 11 project types derived from upstream profile.", "result": "PASS", "evidence": [{ "state": "CONFIRMED", "description": "Profiles validated; fixture derivation matches.", "ref": ".project-os-audit/project-types.json" }] },
+    { "id": "G1.C5-baseline", "description": "Immutable baseline, fingerprint and seal defined.", "result": "PASS", "evidence": [{ "state": "OBSERVED", "description": "Policy and schema with FINALIZED/seal constraints.", "ref": "BASELINE_POLICY.md" }] },
+    { "id": "G1.C6-evidence", "description": "Evidence model with strength/state pairing, source-kind ceilings, planes.", "result": "PASS", "evidence": [{ "state": "CONFIRMED", "description": "Tamper test: documentation promoted to E3 rejected by schema.", "ref": "EVIDENCE_POLICY.md" }] },
+    { "id": "G1.C7-scoring", "description": "Scoring reproducible and explainable; worked example recomputed exactly incl. inputsHash.", "result": "PASS", "evidence": [{ "state": "CONFIRMED", "description": "Engine recomputation of fixture: 39.6, HIGH_RISK, launchBlocked, confidence HIGH.", "ref": "fixtures/foundation-example.json" }] },
+    { "id": "G1.C8-lifecycle", "description": "OPEN -> REMEDIATED -> VERIFIED distinct, history preserved, independent verification.", "result": "PASS", "evidence": [{ "state": "CONFIRMED", "description": "Tamper tests: OPEN->VERIFIED shortcut and self-verification rejected.", "ref": "FINDING_SCHEMA.md" }] },
+    { "id": "G1.C9-security", "description": "Target isolation and prompt-injection boundaries specified.", "result": "PASS", "evidence": [{ "state": "OBSERVED", "description": "B1-B13 boundaries.", "ref": "SECURITY_BOUNDARIES.md" }] },
+    { "id": "G1.C10-recovery", "description": "Recovery priorities, ordering, prompts, handoff and delta specified and checked.", "result": "PASS", "evidence": [{ "state": "CONFIRMED", "description": "Priority inheritance and execution order recomputed.", "ref": "recovery/RECOVERY_CONTRACT.md" }] },
+    { "id": "G1.C11-upstream", "description": "Upstream contract pinned by hash; conflicts R1-R7 reconciled.", "result": "PASS", "evidence": [{ "state": "CONFIRMED", "description": "19 upstream files hash-verified at validation time.", "ref": "INTEGRATION_CONTRACT.md" }] },
+    { "id": "G1.C12-non-gameable", "description": "Documentation-only and lifecycle gaming are rejected.", "result": "PASS", "evidence": [{ "state": "CONFIRMED", "description": "6/6 tamper cases caught.", "ref": "handoffs/2026-09-13-foundation-cycle-0.md" }] }
+  ],
+  "blockers": [],
+  "nonBlockingOpenItems": [
+    "ADR-007 implementation language open (recommend TypeScript/Node 24 LTS); confirm before scaffold.",
+    "Upstream module registry undefined; handoff limited to capability gaps + default target files.",
+    "Upstream 1stStep OS schemas were changing during this cycle; lock bump will be required after upstream closes its cycle."
+  ],
+  "ratification": { "state": "RATIFIED", "by": { "actorType": "USER", "actorId": "user.owner" }, "at": "2026-09-13T06:00:00Z" }
+}

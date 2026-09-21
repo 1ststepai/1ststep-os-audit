@@ -1,0 +1,110 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://1ststep.ai/os-audit/schemas/0.1.0/audit-common.schema.json",
+  "title": "1stStep OS Audit common definitions",
+  "description": "Audit-specific shared definitions. Anything already canonical upstream (ids, hashes, evidence state, actors, untrusted text, applicability conditions) is referenced from 1stStep OS schemas 0.1.0, never redefined. Upstream files are pinned by hash in .project-os-audit/upstream-lock.json.",
+  "$defs": {
+    "schemaVersion": { "const": "0.1.0" },
+    "semver": { "$ref": "https://1ststep.ai/os/schemas/0.1.0/common.schema.json#/$defs/semver" },
+    "timestamp": { "$ref": "https://1ststep.ai/os/schemas/0.1.0/common.schema.json#/$defs/timestamp" },
+    "sha256": { "$ref": "https://1ststep.ai/os/schemas/0.1.0/common.schema.json#/$defs/sha256" },
+    "relativePath": { "$ref": "https://1ststep.ai/os/schemas/0.1.0/common.schema.json#/$defs/relativePath" },
+    "httpsUrl": { "$ref": "https://1ststep.ai/os/schemas/0.1.0/common.schema.json#/$defs/httpsUrl" },
+    "evidenceState": { "$ref": "https://1ststep.ai/os/schemas/0.1.0/common.schema.json#/$defs/evidenceState" },
+    "confidence": { "$ref": "https://1ststep.ai/os/schemas/0.1.0/common.schema.json#/$defs/confidence" },
+    "actor": { "$ref": "https://1ststep.ai/os/schemas/0.1.0/common.schema.json#/$defs/actor" },
+    "userActor": { "$ref": "https://1ststep.ai/os/schemas/0.1.0/common.schema.json#/$defs/userActor" },
+    "untrustedText": { "$ref": "https://1ststep.ai/os/schemas/0.1.0/common.schema.json#/$defs/untrustedText" },
+    "condition": { "$ref": "https://1ststep.ai/os/schemas/0.1.0/module-definition.schema.json#/$defs/condition" },
+
+    "targetId": { "type": "string", "pattern": "^TGT-[A-Z0-9-]{2,48}$" },
+    "baselineId": { "type": "string", "pattern": "^SNAP-[0-9]{4,}$", "description": "Id of a BaselineSnapshot (role BASELINE or CURRENT)." },
+    "runId": { "type": "string", "pattern": "^RUN-[0-9]{4,}$" },
+    "evidenceId": { "type": "string", "pattern": "^EV-[0-9]{4,}-[0-9]{4,}$", "description": "EV-<run seq>-<item seq>; unique per target." },
+    "controlId": { "type": "string", "pattern": "^CTL-[A-Z_]{2,24}-[0-9]{3}$" },
+    "findingId": { "type": "string", "pattern": "^AUD-[0-9]{4,}$", "description": "Immutable; unique per target; never reused." },
+    "taskId": { "type": "string", "pattern": "^RT-[0-9]{4,}$" },
+    "planId": { "type": "string", "pattern": "^RP-[0-9]{4,}$" },
+    "verificationId": { "type": "string", "pattern": "^VER-[0-9]{4,}$" },
+    "capabilityRef": {
+      "description": "Upstream capabilityId (`security.secret_scanning`). Must exist in the pinned upstream capability taxonomy (lower-cased) or, once published, the upstream CapabilityRegistry.",
+      "$ref": "https://1ststep.ai/os/schemas/0.1.0/common.schema.json#/$defs/capabilityId"
+    },
+
+    "domain": {
+      "enum": [
+        "PRODUCT", "ARCHITECTURE", "CODE_QUALITY", "SECURITY", "PRIVACY_DATA", "AUTH", "DATABASE", "TESTING_QA",
+        "ACCESSIBILITY", "DESIGN_UX", "PERFORMANCE", "AI_EFFICIENCY", "OBSERVABILITY", "DEPLOYMENT", "CONTINUITY",
+        "DOCUMENTATION_OS", "BUSINESS_MODEL", "PRICING", "COMPETITORS", "BRAND", "SEO_CONTENT", "SOCIAL",
+        "DISTRIBUTION", "GROWTH", "SALES", "CUSTOMER_SUCCESS", "AUTOMATION", "ANALYTICS", "LOCALIZATION",
+        "LEGAL_READINESS", "BILLING_CONTINUITY", "MIGRATION_CONTINUITY", "RELEASE_READINESS"
+      ]
+    },
+    "projectTypeId": {
+      "enum": [
+        "STATIC_WEBSITE", "SAAS", "AI_SAAS", "MOBILE_APP", "BROWSER_EXTENSION", "ECOMMERCE", "MARKETPLACE",
+        "DEVELOPER_TOOL", "FINTECH_TRADING", "INTERNAL_TOOL", "AUTOMATION_BUSINESS"
+      ]
+    },
+    "auditMode": { "enum": ["SNAPSHOT", "LAUNCH", "RECOVERY", "MIGRATION", "AI_EFFICIENCY", "GROWTH"] },
+    "gate": { "enum": ["G0", "G1", "G2", "G3", "G4", "G5", "G6", "G7"], "description": "Audit gates. In cross-product artifacts write `audit:G1` vs upstream `os:G1`." },
+    "gateResult": { "enum": ["PASS", "BLOCKED", "NOT_APPLICABLE"] },
+    "severity": { "enum": ["CRITICAL", "HIGH", "MEDIUM", "LOW", "INFO"] },
+    "priority": { "enum": ["P0", "P1", "P2"] },
+    "evidenceStrength": { "enum": ["E0", "E1", "E2", "E3", "E4"] },
+    "sourceKind": {
+      "description": "What produced the evidence. Each kind has a strength ceiling and a plane (see scoring.json sourceKinds). Documentation can never exceed E2.",
+      "enum": [
+        "RUNTIME_PROBE", "EXTERNAL_SYSTEM", "TEST_EXECUTION", "COMMAND_OUTPUT", "GIT_METADATA",
+        "SOURCE_CODE", "CONFIGURATION", "DEPENDENCY_MANIFEST",
+        "DOCUMENTATION", "USER_ATTESTATION_ARTIFACT",
+        "USER_STATEMENT", "AI_INFERENCE"
+      ]
+    },
+    "controlStatus": {
+      "description": "Implementation status of one control. ABSENT needs positive absence evidence (searched, not found); lack of evidence is UNVERIFIED.",
+      "enum": ["ABSENT", "PARTIAL", "IMPLEMENTED_UNVERIFIED", "IMPLEMENTED_STRONG", "VERIFIED", "UNVERIFIED", "BLOCKED", "NOT_APPLICABLE"]
+    },
+    "findingStatus": { "enum": ["OPEN", "IN_PROGRESS", "BLOCKED", "REMEDIATED", "VERIFIED", "ACCEPTED_RISK", "NOT_APPLICABLE", "DUPLICATE"] },
+    "verificationMethod": { "enum": ["TEST", "LIVE_CHECK", "EXTERNAL_SYSTEM", "CODE_REVIEW", "COMMAND", "HUMAN_REVIEW"] },
+    "verificationRequirement": {
+      "type": "object",
+      "required": ["method", "minStrength", "description"],
+      "properties": {
+        "method": { "$ref": "#/$defs/verificationMethod" },
+        "minStrength": { "$ref": "#/$defs/evidenceStrength" },
+        "description": { "type": "string", "minLength": 1, "maxLength": 2000 }
+      },
+      "additionalProperties": false
+    },
+    "approvalClass": {
+      "description": "Upstream EXTERNAL_ACTIONS.md classes.",
+      "enum": ["AUTO_ALLOWED", "ASSISTED", "APPROVAL_REQUIRED", "HIGH_RISK_APPROVAL"]
+    },
+    "scoreValue": { "type": "number", "minimum": 0, "maximum": 100 },
+    "auditNote": {
+      "description": "Append-only correction/clarification. The only way to amend a finalized baseline.",
+      "type": "object",
+      "required": ["kind", "schemaVersion", "id", "createdAt", "author", "appliesTo", "noteType", "text"],
+      "properties": {
+        "kind": { "const": "AuditNote" },
+        "schemaVersion": { "$ref": "#/$defs/schemaVersion" },
+        "id": { "type": "string", "pattern": "^NOTE-[0-9]{4,}$" },
+        "createdAt": { "$ref": "#/$defs/timestamp" },
+        "author": { "$ref": "#/$defs/actor" },
+        "appliesTo": {
+          "type": "object",
+          "required": ["objectKind", "objectId"],
+          "properties": {
+            "objectKind": { "enum": ["BaselineSnapshot", "AuditRun", "EvidenceItem", "ControlResult", "Finding", "ReadinessScore"] },
+            "objectId": { "type": "string", "maxLength": 128 }
+          },
+          "additionalProperties": false
+        },
+        "noteType": { "enum": ["CORRECTION", "CLARIFICATION", "SCOPE_CHANGE", "INVALIDATION"] },
+        "text": { "type": "string", "minLength": 1, "maxLength": 4000 }
+      },
+      "additionalProperties": false
+    }
+  }
+}

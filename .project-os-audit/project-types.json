@@ -1,0 +1,104 @@
+{
+  "kind": "ProjectTypeProfiles",
+  "schemaVersion": "0.1.0",
+  "profilesVersion": "0.1.0",
+  "combination": "MAX_WEIGHT_UNION_APPLICABILITY",
+  "domainDefaults": {
+    "PRODUCT": 3, "ARCHITECTURE": 3, "CODE_QUALITY": 3, "SECURITY": 5, "PRIVACY_DATA": 4, "AUTH": 4,
+    "DATABASE": 4, "TESTING_QA": 4, "ACCESSIBILITY": 2, "DESIGN_UX": 3, "PERFORMANCE": 2, "AI_EFFICIENCY": 0,
+    "OBSERVABILITY": 3, "DEPLOYMENT": 3, "CONTINUITY": 4, "DOCUMENTATION_OS": 2, "BUSINESS_MODEL": 2,
+    "PRICING": 2, "COMPETITORS": 1, "BRAND": 1, "SEO_CONTENT": 1, "SOCIAL": 1, "DISTRIBUTION": 1, "GROWTH": 2,
+    "SALES": 1, "CUSTOMER_SUCCESS": 2, "AUTOMATION": 1, "ANALYTICS": 2, "LOCALIZATION": 1, "LEGAL_READINESS": 3,
+    "BILLING_CONTINUITY": 3, "MIGRATION_CONTINUITY": 2, "RELEASE_READINESS": 3
+  },
+  "profiles": [
+    {
+      "id": "STATIC_WEBSITE", "title": "Static / marketing website",
+      "derivation": { "all": [{ "field": "productTypes", "operator": "INCLUDES_ANY", "values": ["CONTENT_SITE"] }] },
+      "domainWeights": { "AUTH": 0, "DATABASE": 0, "PRIVACY_DATA": 1, "TESTING_QA": 1, "CONTINUITY": 1, "OBSERVABILITY": 1, "BILLING_CONTINUITY": 0, "MIGRATION_CONTINUITY": 0, "CUSTOMER_SUCCESS": 0, "SALES": 1, "PRICING": 0, "BUSINESS_MODEL": 1, "SEO_CONTENT": 5, "BRAND": 4, "PERFORMANCE": 4, "ACCESSIBILITY": 3, "ANALYTICS": 3, "GROWTH": 3, "SOCIAL": 2, "LEGAL_READINESS": 2, "SECURITY": 3, "CODE_QUALITY": 1, "ARCHITECTURE": 1 },
+      "controlMultipliers": {}, "excludeControls": [], "launchBlockerDomains": ["SECURITY"]
+    },
+    {
+      "id": "SAAS", "title": "SaaS web application",
+      "derivation": { "any": [{ "field": "productTypes", "operator": "INCLUDES_ANY", "values": ["WEB_SAAS", "API_SERVICE"] }] },
+      "domainWeights": { "AUTH": 5, "DATABASE": 5, "CONTINUITY": 5, "BILLING_CONTINUITY": 5, "OBSERVABILITY": 4, "PRICING": 3, "CUSTOMER_SUCCESS": 3, "ANALYTICS": 3 },
+      "controlMultipliers": { "CTL-AUTH-003": 1.5 }, "excludeControls": [],
+      "launchBlockerDomains": ["SECURITY", "AUTH", "DATABASE", "CONTINUITY", "BILLING_CONTINUITY"]
+    },
+    {
+      "id": "AI_SAAS", "title": "AI SaaS / AI agent product",
+      "derivation": { "all": [
+        { "field": "productTypes", "operator": "INCLUDES_ANY", "values": ["WEB_SAAS", "API_SERVICE", "AI_AGENT", "BOT"] },
+        { "field": "ai.usesAI", "operator": "IS_TRUE" }
+      ] },
+      "domainWeights": { "AUTH": 5, "DATABASE": 5, "CONTINUITY": 5, "BILLING_CONTINUITY": 5, "AI_EFFICIENCY": 5, "PRIVACY_DATA": 5, "OBSERVABILITY": 4, "PRICING": 4, "CUSTOMER_SUCCESS": 3, "ANALYTICS": 3, "LEGAL_READINESS": 4 },
+      "controlMultipliers": { "CTL-SECURITY-004": 1.5, "CTL-AI_EFFICIENCY-001": 1.5, "CTL-SECURITY-005": 1.5 }, "excludeControls": [],
+      "launchBlockerDomains": ["SECURITY", "AUTH", "DATABASE", "CONTINUITY", "BILLING_CONTINUITY", "AI_EFFICIENCY"]
+    },
+    {
+      "id": "MOBILE_APP", "title": "Mobile application",
+      "derivation": { "any": [
+        { "field": "productTypes", "operator": "INCLUDES_ANY", "values": ["MOBILE_APP"] },
+        { "field": "platformTargets", "operator": "INCLUDES_ANY", "values": ["IOS", "ANDROID"] }
+      ] },
+      "domainWeights": { "DISTRIBUTION": 5, "DESIGN_UX": 4, "ACCESSIBILITY": 3, "PERFORMANCE": 3, "PRIVACY_DATA": 5, "LEGAL_READINESS": 4, "RELEASE_READINESS": 4, "SEO_CONTENT": 0 },
+      "controlMultipliers": { "CTL-DISTRIBUTION-002": 1.5 }, "excludeControls": ["CTL-SECURITY-003", "CTL-SEO_CONTENT-001"],
+      "launchBlockerDomains": ["DISTRIBUTION", "PRIVACY_DATA", "LEGAL_READINESS"]
+    },
+    {
+      "id": "BROWSER_EXTENSION", "title": "Browser extension",
+      "derivation": { "any": [
+        { "field": "productTypes", "operator": "INCLUDES_ANY", "values": ["BROWSER_EXTENSION"] },
+        { "field": "platformTargets", "operator": "INCLUDES_ANY", "values": ["BROWSER_EXTENSION"] }
+      ] },
+      "domainWeights": { "SECURITY": 5, "PRIVACY_DATA": 5, "DISTRIBUTION": 5, "LEGAL_READINESS": 4, "DATABASE": 1, "CONTINUITY": 1, "SEO_CONTENT": 0, "PERFORMANCE": 2 },
+      "controlMultipliers": { "CTL-SECURITY-006": 2 }, "excludeControls": ["CTL-SECURITY-003", "CTL-DATABASE-002"],
+      "launchBlockerDomains": ["SECURITY", "PRIVACY_DATA", "DISTRIBUTION"]
+    },
+    {
+      "id": "ECOMMERCE", "title": "E-commerce store",
+      "derivation": { "all": [{ "field": "productTypes", "operator": "INCLUDES_ANY", "values": ["ECOMMERCE"] }] },
+      "domainWeights": { "BILLING_CONTINUITY": 5, "PRICING": 5, "PERFORMANCE": 4, "SEO_CONTENT": 4, "ANALYTICS": 4, "LEGAL_READINESS": 4, "CUSTOMER_SUCCESS": 4, "CONTINUITY": 5, "GROWTH": 3 },
+      "controlMultipliers": { "CTL-SECURITY-007": 1.5, "CTL-PRICING-001": 1.5 }, "excludeControls": [],
+      "launchBlockerDomains": ["SECURITY", "BILLING_CONTINUITY", "LEGAL_READINESS", "CONTINUITY"]
+    },
+    {
+      "id": "MARKETPLACE", "title": "Two-sided marketplace",
+      "derivation": { "all": [{ "field": "productTypes", "operator": "INCLUDES_ANY", "values": ["MARKETPLACE"] }] },
+      "domainWeights": { "AUTH": 5, "DATABASE": 5, "PRIVACY_DATA": 5, "BILLING_CONTINUITY": 5, "LEGAL_READINESS": 4, "CUSTOMER_SUCCESS": 4, "CONTINUITY": 5, "GROWTH": 3, "PRICING": 3 },
+      "controlMultipliers": { "CTL-AUTH-003": 1.5, "CTL-SECURITY-008": 1.5 }, "excludeControls": [],
+      "launchBlockerDomains": ["SECURITY", "AUTH", "BILLING_CONTINUITY", "LEGAL_READINESS"]
+    },
+    {
+      "id": "DEVELOPER_TOOL", "title": "Developer tool / API / SDK / CLI",
+      "derivation": { "any": [
+        { "field": "productTypes", "operator": "INCLUDES_ANY", "values": ["DEVELOPER_TOOL", "SDK_LIBRARY"] },
+        { "field": "platformTargets", "operator": "INCLUDES_ANY", "values": ["CLI"] }
+      ] },
+      "domainWeights": { "DOCUMENTATION_OS": 5, "CODE_QUALITY": 5, "TESTING_QA": 5, "RELEASE_READINESS": 4, "DESIGN_UX": 1, "ACCESSIBILITY": 1, "SEO_CONTENT": 2, "SOCIAL": 2, "SALES": 1 },
+      "controlMultipliers": { "CTL-DOCUMENTATION_OS-003": 1.5, "CTL-SECURITY-002": 1.5 }, "excludeControls": [],
+      "launchBlockerDomains": ["SECURITY", "RELEASE_READINESS"]
+    },
+    {
+      "id": "FINTECH_TRADING", "title": "Fintech / trading / financial signals",
+      "derivation": { "all": [{ "field": "productTypes", "operator": "INCLUDES_ANY", "values": ["FINANCIAL_TRADING"] }] },
+      "domainWeights": { "SECURITY": 5, "AUTH": 5, "PRIVACY_DATA": 5, "DATABASE": 5, "CONTINUITY": 5, "LEGAL_READINESS": 5, "BILLING_CONTINUITY": 5, "OBSERVABILITY": 5, "TESTING_QA": 5, "CODE_QUALITY": 4, "RELEASE_READINESS": 4, "AUTOMATION": 4 },
+      "controlMultipliers": { "CTL-SECURITY-008": 2, "CTL-LEGAL_READINESS-002": 2, "CTL-CODE_QUALITY-001": 1.5 }, "excludeControls": [],
+      "launchBlockerDomains": ["SECURITY", "AUTH", "LEGAL_READINESS", "CONTINUITY", "BILLING_CONTINUITY"]
+    },
+    {
+      "id": "INTERNAL_TOOL", "title": "Internal business tool",
+      "derivation": { "all": [{ "field": "productTypes", "operator": "INCLUDES_ANY", "values": ["INTERNAL_TOOL"] }] },
+      "domainWeights": { "BRAND": 0, "SEO_CONTENT": 0, "SOCIAL": 0, "DISTRIBUTION": 0, "GROWTH": 0, "SALES": 0, "PRICING": 0, "COMPETITORS": 0, "BUSINESS_MODEL": 1, "LEGAL_READINESS": 1, "BILLING_CONTINUITY": 0, "AUTH": 5, "AUTOMATION": 3, "CONTINUITY": 4 },
+      "controlMultipliers": { "CTL-SECURITY-008": 1.5 }, "excludeControls": [],
+      "launchBlockerDomains": ["SECURITY", "AUTH"]
+    },
+    {
+      "id": "AUTOMATION_BUSINESS", "title": "Automation-heavy business (workflows, bots, data pipelines)",
+      "derivation": { "any": [{ "field": "productTypes", "operator": "INCLUDES_ANY", "values": ["DATA_PIPELINE", "BOT", "AI_AGENT"] }] },
+      "domainWeights": { "AUTOMATION": 5, "OBSERVABILITY": 5, "CONTINUITY": 4, "AI_EFFICIENCY": 4, "SALES": 3, "CUSTOMER_SUCCESS": 3, "DESIGN_UX": 1, "ACCESSIBILITY": 1, "SEO_CONTENT": 1 },
+      "controlMultipliers": { "CTL-AUTOMATION-001": 2 }, "excludeControls": [],
+      "launchBlockerDomains": ["SECURITY", "AUTOMATION"]
+    }
+  ]
+}

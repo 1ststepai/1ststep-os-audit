@@ -1,0 +1,53 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://1ststep.ai/os-audit/schemas/0.1.0/dimension-score.schema.json",
+  "title": "DimensionScore",
+  "description": "Deterministic score for one domain in one run. Explainable: every contributing control, cap and finding is listed.",
+  "type": "object",
+  "required": ["kind", "schemaVersion", "runId", "domain", "included", "weight", "controls", "rawScore", "caps", "score", "findingIds", "unverifiedControlIds", "cappedControlIds"],
+  "additionalProperties": false,
+  "properties": {
+    "kind": { "const": "DimensionScore" },
+    "schemaVersion": { "$ref": "audit-common.schema.json#/$defs/schemaVersion" },
+    "runId": { "$ref": "audit-common.schema.json#/$defs/runId" },
+    "domain": { "$ref": "audit-common.schema.json#/$defs/domain" },
+    "included": { "type": "boolean", "description": "false when weight is 0, out of scope, or no applicable controls. Excluded dimensions never enter the overall average." },
+    "exclusionReason": { "enum": ["ZERO_WEIGHT", "OUT_OF_SCOPE", "NO_APPLICABLE_CONTROLS"] },
+    "weight": { "type": "number", "minimum": 0, "maximum": 5 },
+    "controls": {
+      "type": "array",
+      "items": {
+        "type": "object", "required": ["controlId", "weight", "finalScore"],
+        "properties": {
+          "controlId": { "$ref": "audit-common.schema.json#/$defs/controlId" },
+          "weight": { "type": "number", "minimum": 0 },
+          "finalScore": { "$ref": "audit-common.schema.json#/$defs/scoreValue" }
+        },
+        "additionalProperties": false
+      }
+    },
+    "rawScore": { "oneOf": [{ "$ref": "audit-common.schema.json#/$defs/scoreValue" }, { "type": "null" }] },
+    "caps": { "type": "array", "items": { "$ref": "#/$defs/cap" } },
+    "score": { "oneOf": [{ "$ref": "audit-common.schema.json#/$defs/scoreValue" }, { "type": "null" }] },
+    "findingIds": { "type": "array", "uniqueItems": true, "items": { "$ref": "audit-common.schema.json#/$defs/findingId" } },
+    "unverifiedControlIds": { "type": "array", "uniqueItems": true, "items": { "$ref": "audit-common.schema.json#/$defs/controlId" } },
+    "cappedControlIds": { "type": "array", "uniqueItems": true, "items": { "$ref": "audit-common.schema.json#/$defs/controlId" }, "description": "Controls whose claimed status level exceeded their evidence cap." }
+  },
+  "if": { "properties": { "included": { "const": false } } },
+  "then": { "required": ["exclusionReason"], "properties": { "score": { "type": "null" } } },
+  "else": { "properties": { "score": { "type": "number" }, "rawScore": { "type": "number" } } },
+  "$defs": {
+    "cap": {
+      "type": "object",
+      "required": ["type", "limit", "binding", "reason"],
+      "properties": {
+        "type": { "enum": ["SEVERITY_CRITICAL", "SEVERITY_HIGH", "LAUNCH_BLOCKER"] },
+        "limit": { "$ref": "audit-common.schema.json#/$defs/scoreValue" },
+        "binding": { "type": "boolean", "description": "true if the cap actually lowered the score." },
+        "findingIds": { "type": "array", "items": { "$ref": "audit-common.schema.json#/$defs/findingId" } },
+        "reason": { "type": "string", "maxLength": 500 }
+      },
+      "additionalProperties": false
+    }
+  }
+}

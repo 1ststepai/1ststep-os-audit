@@ -1,0 +1,54 @@
+{
+  "kind": "ScoringModel",
+  "scoringModelVersion": "0.1.0",
+  "spec": "SCORING_MODEL.md",
+  "statusLevels": {
+    "ABSENT": 0,
+    "PARTIAL": 25,
+    "IMPLEMENTED_UNVERIFIED": 50,
+    "IMPLEMENTED_STRONG": 75,
+    "VERIFIED": 100,
+    "UNVERIFIED": 0,
+    "BLOCKED": 0
+  },
+  "evidenceCaps": { "E0": 0, "E1": 50, "E2": 70, "E3": 85, "E4": 100 },
+  "sourceKinds": {
+    "RUNTIME_PROBE":             { "maxStrength": "E4", "plane": "LIVE" },
+    "EXTERNAL_SYSTEM":           { "maxStrength": "E4", "plane": "LIVE" },
+    "TEST_EXECUTION":            { "maxStrength": "E4", "plane": "REPOSITORY" },
+    "COMMAND_OUTPUT":            { "maxStrength": "E4", "plane": "REPOSITORY" },
+    "GIT_METADATA":              { "maxStrength": "E4", "plane": "REPOSITORY" },
+    "SOURCE_CODE":               { "maxStrength": "E3", "plane": "REPOSITORY" },
+    "CONFIGURATION":             { "maxStrength": "E3", "plane": "REPOSITORY" },
+    "DEPENDENCY_MANIFEST":       { "maxStrength": "E3", "plane": "REPOSITORY" },
+    "DOCUMENTATION":             { "maxStrength": "E2", "plane": "REPOSITORY" },
+    "USER_ATTESTATION_ARTIFACT": { "maxStrength": "E2", "plane": "HUMAN" },
+    "USER_STATEMENT":            { "maxStrength": "E1", "plane": "HUMAN" },
+    "AI_INFERENCE":              { "maxStrength": "E1", "plane": "ANALYSIS" }
+  },
+  "defaultSourceKindCaps": {
+    "DOCUMENTATION": 25,
+    "USER_STATEMENT": 25,
+    "AI_INFERENCE": 25,
+    "USER_ATTESTATION_ARTIFACT": 50
+  },
+  "livePlaneCap": 50,
+  "severityDimensionCaps": { "CRITICAL": 40, "HIGH": 70 },
+  "capActiveFindingStatuses": ["OPEN", "IN_PROGRESS", "BLOCKED", "REMEDIATED"],
+  "launchBlockerOverallCap": 49,
+  "labels": [
+    { "min": 90, "label": "STRONG" },
+    { "min": 80, "label": "GOOD_WITH_MINOR_GAPS" },
+    { "min": 70, "label": "MATERIAL_GAPS" },
+    { "min": 50, "label": "NOT_RELEASE_READY" },
+    { "min": 0,  "label": "HIGH_RISK_RECOVERY_REQUIRED" }
+  ],
+  "confidence": {
+    "strongStrengths": ["E3", "E4"],
+    "HIGH": 0.7,
+    "MEDIUM": 0.4,
+    "HIGH_requiresLaunchBlockerControlsEvidenced": true
+  },
+  "rounding": "Intermediate values exact. Published scores round half-up to 1 decimal; strongEvidenceWeightRatio to 3 decimals.",
+  "multiTypeCombination": "MAX_WEIGHT_UNION_APPLICABILITY"
+}

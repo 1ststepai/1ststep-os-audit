@@ -1,0 +1,10 @@
+{
+  "version": "0.1.0",
+  "resume_policy": "checkpoint_then_resume",
+  "new_run_on_session_restart": false,
+  "preserve_finding_ids": true,
+  "preserve_baseline": true,
+  "resume_time_source": "provider_or_runtime_only",
+  "guess_reset_time": false,
+  "checkpoint_after_atomic_unit": true
+}

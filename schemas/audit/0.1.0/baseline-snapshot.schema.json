@@ -1,0 +1,194 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://1ststep.ai/os-audit/schemas/0.1.0/baseline-snapshot.schema.json",
+  "title": "BaselineSnapshot",
+  "description": "Fingerprint + inventory + stored copy of a target at one moment. role=BASELINE is the pre-remediation reference; role=CURRENT is a later re-audit/verification snapshot. Once FINALIZED the record is sealed: never rewritten, only amended by AuditNotes. See BASELINE_POLICY.md.",
+  "type": "object",
+  "required": ["kind", "schemaVersion", "id", "targetId", "role", "status", "capturedAt", "capturedBy", "captureTool", "fingerprint", "storage", "inventory", "commands", "externalEvidenceIds"],
+  "additionalProperties": false,
+  "properties": {
+    "kind": { "const": "BaselineSnapshot" },
+    "schemaVersion": { "$ref": "audit-common.schema.json#/$defs/schemaVersion" },
+    "id": { "$ref": "audit-common.schema.json#/$defs/baselineId" },
+    "targetId": { "$ref": "audit-common.schema.json#/$defs/targetId" },
+    "role": { "enum": ["BASELINE", "CURRENT"] },
+    "status": { "enum": ["CAPTURING", "CAPTURED", "INVALIDATED", "FINALIZED"] },
+    "capturedAt": { "$ref": "audit-common.schema.json#/$defs/timestamp" },
+    "capturedBy": { "$ref": "audit-common.schema.json#/$defs/actor" },
+    "captureTool": {
+      "type": "object",
+      "required": ["name", "version"],
+      "properties": { "name": { "type": "string", "maxLength": 100 }, "version": { "$ref": "audit-common.schema.json#/$defs/semver" } },
+      "additionalProperties": false
+    },
+    "fingerprint": {
+      "type": "object",
+      "required": ["vcs", "contentManifest", "dirty", "captureIntegrity"],
+      "properties": {
+        "vcs": { "enum": ["GIT", "NONE"] },
+        "git": {
+          "type": "object",
+          "required": ["headSha", "branch", "rootCommits", "isShallow", "submodules", "statusHash", "stashCount"],
+          "properties": {
+            "headSha": { "$ref": "audit-target.schema.json#/$defs/gitSha" },
+            "branch": { "type": "string", "maxLength": 255, "description": "Branch name or `(detached)`." },
+            "rootCommits": { "type": "array", "minItems": 1, "items": { "$ref": "audit-target.schema.json#/$defs/gitSha" } },
+            "normalizedRemote": { "$ref": "audit-target.schema.json#/$defs/credentialFreeUrl" },
+            "isShallow": { "type": "boolean" },
+            "submodules": {
+              "type": "array",
+              "items": {
+                "type": "object", "required": ["path", "sha"],
+                "properties": { "path": { "$ref": "audit-common.schema.json#/$defs/relativePath" }, "sha": { "$ref": "audit-target.schema.json#/$defs/gitSha" } },
+                "additionalProperties": false
+              }
+            },
+            "worktreeCount": { "type": "integer", "minimum": 1 },
+            "statusHash": { "$ref": "audit-common.schema.json#/$defs/sha256", "description": "sha256 of `GIT_OPTIONAL_LOCKS=0 git status --porcelain=v2 -z --untracked-files=all`." },
+            "stashCount": { "type": "integer", "minimum": 0 }
+          },
+          "additionalProperties": false
+        },
+        "dirty": {
+          "type": "object",
+          "required": ["isDirty", "modifiedCount", "untrackedCount", "deletedCount"],
+          "properties": {
+            "isDirty": { "type": "boolean" },
+            "modifiedCount": { "type": "integer", "minimum": 0 },
+            "untrackedCount": { "type": "integer", "minimum": 0 },
+            "deletedCount": { "type": "integer", "minimum": 0 }
+          },
+          "additionalProperties": false
+        },
+        "contentManifest": {
+          "type": "object",
+          "required": ["algorithm", "fileCount", "totalBytes", "manifestHash", "excluded"],
+          "properties": {
+            "algorithm": { "const": "sha256-sorted-path-v1" },
+            "fileCount": { "type": "integer", "minimum": 0 },
+            "totalBytes": { "type": "integer", "minimum": 0 },
+            "manifestHash": { "$ref": "audit-common.schema.json#/$defs/sha256" },
+            "excluded": {
+              "type": "object",
+              "required": ["gitIgnoredCount", "secretCandidatePaths", "oversizeCount", "symlinkOutsideRootCount"],
+              "properties": {
+                "gitIgnoredCount": { "type": "integer", "minimum": 0 },
+                "secretCandidatePaths": { "type": "array", "items": { "$ref": "audit-common.schema.json#/$defs/relativePath" }, "description": "Paths only (e.g. .env). Contents are never stored or sent to models." },
+                "oversizeCount": { "type": "integer", "minimum": 0 },
+                "symlinkOutsideRootCount": { "type": "integer", "minimum": 0 }
+              },
+              "additionalProperties": false
+            }
+          },
+          "additionalProperties": false
+        },
+        "captureIntegrity": {
+          "description": "Manifest hashed before and after capture. Unequal = target changed during capture -> status INVALIDATED.",
+          "type": "object",
+          "required": ["preCaptureManifestHash", "postCaptureManifestHash", "stable"],
+          "properties": {
+            "preCaptureManifestHash": { "$ref": "audit-common.schema.json#/$defs/sha256" },
+            "postCaptureManifestHash": { "$ref": "audit-common.schema.json#/$defs/sha256" },
+            "stable": { "type": "boolean" }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false,
+      "if": { "properties": { "vcs": { "const": "GIT" } } },
+      "then": { "required": ["git"] }
+    },
+    "storage": {
+      "description": "Content-addressed objects in the audit store (objects/sha256/aa/bb...). Store objects are write-once.",
+      "type": "object",
+      "required": ["manifestObject"],
+      "properties": {
+        "manifestObject": { "$ref": "audit-common.schema.json#/$defs/sha256" },
+        "gitBundleObject": { "$ref": "audit-common.schema.json#/$defs/sha256" },
+        "overlayArchiveObject": { "$ref": "audit-common.schema.json#/$defs/sha256", "description": "Modified + untracked, non-ignored, non-secret files." },
+        "fullArchiveObject": { "$ref": "audit-common.schema.json#/$defs/sha256", "description": "Filtered working-tree inventory. Used when vcs=NONE or offline free capture omits Git history." }
+      },
+      "additionalProperties": false
+    },
+    "inventory": {
+      "type": "object",
+      "required": ["languages", "manifests", "scripts", "dependencyCounts", "signals"],
+      "properties": {
+        "languages": {
+          "type": "array",
+          "items": { "type": "object", "required": ["name", "files"], "properties": { "name": { "type": "string", "maxLength": 64 }, "files": { "type": "integer", "minimum": 0 } }, "additionalProperties": false }
+        },
+        "manifests": { "type": "array", "items": { "$ref": "audit-common.schema.json#/$defs/relativePath" } },
+        "scripts": {
+          "type": "array",
+          "items": {
+            "type": "object", "required": ["source", "name", "command"],
+            "properties": {
+              "source": { "$ref": "audit-common.schema.json#/$defs/relativePath" },
+              "name": { "type": "string", "maxLength": 200 },
+              "command": { "$ref": "audit-common.schema.json#/$defs/untrustedText" }
+            },
+            "additionalProperties": false
+          }
+        },
+        "dependencyCounts": {
+          "type": "object", "required": ["direct", "dev"],
+          "properties": { "direct": { "type": "integer", "minimum": 0 }, "dev": { "type": "integer", "minimum": 0 } },
+          "additionalProperties": false
+        },
+        "signals": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["category", "detectorId", "value", "evidenceId"],
+            "properties": {
+              "category": { "enum": ["STACK", "SCRIPTS", "DEPENDENCIES", "TESTS", "AUTH", "DATABASE", "PAYMENTS", "DEPLOYMENT", "AI_PROVIDERS", "ANALYTICS", "INTEGRATIONS", "DOCS", "CAPABILITY"] },
+              "detectorId": { "type": "string", "pattern": "^det\\.[a-z0-9_.-]{2,80}$" },
+              "value": { "type": "string", "maxLength": 200 },
+              "capabilityRef": { "$ref": "audit-common.schema.json#/$defs/capabilityRef" },
+              "evidenceId": { "$ref": "audit-common.schema.json#/$defs/evidenceId" }
+            },
+            "additionalProperties": false
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "commands": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "purpose", "command", "isolation", "status"],
+        "properties": {
+          "id": { "type": "string", "pattern": "^CMD-[0-9]{3,}$" },
+          "purpose": { "enum": ["INSTALL", "BUILD", "TEST", "LINT", "TYPECHECK", "SECRET_SCAN", "DEPENDENCY_AUDIT", "OTHER"] },
+          "command": { "type": "string", "maxLength": 1000 },
+          "isolation": { "enum": ["CONTAINER_NO_NETWORK", "CONTAINER_REGISTRY_ONLY", "PROCESS_DISPOSABLE_COPY", "LOCAL_READ_ONLY", "NOT_RUN"] },
+          "status": { "enum": ["PASSED", "FAILED", "ERROR", "TIMEOUT", "NOT_RUN", "BLOCKED"] },
+          "exitCode": { "type": ["integer", "null"] },
+          "durationMs": { "type": "integer", "minimum": 0 },
+          "outputObject": { "$ref": "audit-common.schema.json#/$defs/sha256" },
+          "reason": { "type": "string", "maxLength": 1000 }
+        },
+        "additionalProperties": false
+      }
+    },
+    "externalEvidenceIds": { "type": "array", "uniqueItems": true, "items": { "$ref": "audit-common.schema.json#/$defs/evidenceId" } },
+    "finalization": {
+      "type": "object",
+      "required": ["finalizedAt", "finalizedBy", "sealHash", "ledgerEntryHash"],
+      "properties": {
+        "finalizedAt": { "$ref": "audit-common.schema.json#/$defs/timestamp" },
+        "finalizedBy": { "$ref": "audit-common.schema.json#/$defs/userActor" },
+        "sealHash": { "$ref": "audit-common.schema.json#/$defs/sha256", "description": "sha256 over canonical JSON of this snapshot (minus finalization) + baseline run's evidence, control results, findings and scores." },
+        "ledgerEntryHash": { "$ref": "audit-common.schema.json#/$defs/sha256" }
+      },
+      "additionalProperties": false
+    }
+  },
+  "allOf": [
+    { "if": { "properties": { "status": { "const": "FINALIZED" } } }, "then": { "required": ["finalization"], "properties": { "fingerprint": { "properties": { "captureIntegrity": { "properties": { "stable": { "const": true } } } } } } } },
+    { "if": { "properties": { "fingerprint": { "properties": { "vcs": { "const": "GIT" } } } } }, "then": { "properties": { "storage": { "anyOf": [{ "required": ["gitBundleObject"] }, { "required": ["fullArchiveObject"] }] } } } },
+    { "if": { "properties": { "fingerprint": { "properties": { "vcs": { "const": "NONE" } } } } }, "then": { "properties": { "storage": { "required": ["fullArchiveObject"] } } } }
+  ]
+}

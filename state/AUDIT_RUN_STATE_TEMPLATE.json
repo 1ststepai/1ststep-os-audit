@@ -1,0 +1,21 @@
+{
+  "run_id": null,
+  "status": "RESUME_READY",
+  "target_id": null,
+  "baseline_id": null,
+  "phase": null,
+  "current_domain": null,
+  "completed_domains": [],
+  "remaining_domains": [],
+  "completed_units": [],
+  "pending_units": [],
+  "next_action": null,
+  "last_completed_finding_id": null,
+  "verification_state": {},
+  "provider": null,
+  "provider_model": null,
+  "pause_reason": null,
+  "resume_not_before": null,
+  "checkpointed_at": null,
+  "checkpoint_version": 1
+}

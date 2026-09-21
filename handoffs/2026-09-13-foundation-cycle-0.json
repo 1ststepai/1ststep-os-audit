@@ -1,0 +1,58 @@
+{
+  "kind": "Handoff",
+  "schemaVersion": "0.1.0",
+  "id": "audit.handoff.2026-09-13.foundation-cycle-0",
+  "date": "2026-09-13",
+  "cycle": "Foundation Cycle 0",
+  "author": { "actorType": "AGENT", "actorId": "claude-code" },
+  "summary": "Audit engine architecture, 15 versioned schemas, 52-control registry over 33 domains, 11 project-type profiles, evidence/scoring/lifecycle/baseline/recovery contracts, upstream integration contract with hash lock, security boundaries and dogfood plan. No target project audited or modified.",
+  "filesChanged": [
+    { "path": "ARCHITECTURE.md", "change": "ADDED" },
+    { "path": "INTEGRATION_CONTRACT.md", "change": "ADDED" },
+    { "path": "SECURITY_BOUNDARIES.md", "change": "ADDED" },
+    { "path": "EXTERNAL_EVIDENCE.md", "change": "ADDED" },
+    { "path": "DOGFOODING_PLAN.md", "change": "ADDED" },
+    { "path": "schemas/audit/0.1.0", "change": "ADDED" },
+    { "path": ".project-os-audit/controls.json", "change": "ADDED" },
+    { "path": ".project-os-audit/project-types.json", "change": "ADDED" },
+    { "path": ".project-os-audit/upstream-lock.json", "change": "ADDED" },
+    { "path": ".project-os-audit/scoring.json", "change": "MODIFIED" },
+    { "path": ".project-os-audit/domains.json", "change": "MODIFIED" },
+    { "path": ".project-os-audit/manifest.json", "change": "MODIFIED" },
+    { "path": "recovery/RECOVERY_CONTRACT.md", "change": "ADDED" },
+    { "path": "recovery/DISCOVERY_SPEC.md", "change": "ADDED" },
+    { "path": "fixtures/foundation-example.json", "change": "ADDED" },
+    { "path": "tools/validate_foundation.py", "change": "ADDED" },
+    { "path": "gates/records", "change": "ADDED" },
+    { "path": "DECISIONS.md", "change": "MODIFIED" },
+    { "path": "AGENTS.md", "change": "MODIFIED" },
+    { "path": "SCORING_MODEL.md", "change": "MODIFIED" },
+    { "path": "EVIDENCE_POLICY.md", "change": "MODIFIED" },
+    { "path": "FINDING_SCHEMA.md", "change": "MODIFIED" },
+    { "path": "BASELINE_POLICY.md", "change": "MODIFIED" },
+    { "path": "SCHEMAS.md", "change": "MODIFIED" },
+    { "path": "state/CURRENT_STATE.md", "change": "MODIFIED" },
+    { "path": "state/IMPLEMENTATION_INVENTORY.md", "change": "MODIFIED" },
+    { "path": "state/NEXT_ACTIONS.md", "change": "MODIFIED" }
+  ],
+  "checks": [
+    { "name": "foundation conformance", "command": "python tools/validate_foundation.py", "result": "PASS", "summary": "Schemas, registries, upstream lock, fixture rescoring, lifecycle and recovery ordering all match." },
+    { "name": "tamper suite", "command": "scratchpad mutation harness over fixture copy", "result": "PASS", "summary": "6/6 deliberate violations rejected." }
+  ],
+  "gates": [
+    { "gate": "G0", "result": "PASS", "ref": "gates/records/audit-G0-foundation-cycle-0.json" },
+    { "gate": "G1", "result": "PASS", "ref": "gates/records/audit-G1-foundation-cycle-0.json" }
+  ],
+  "blockers": [],
+  "openDecisions": [
+    { "id": "DEC-G1-RATIFY", "question": "Ratify audit:G1?", "blocks": "Cycle 1 scaffold" },
+    { "id": "DEC-ADR-007", "question": "Implementation language (recommend TypeScript/Node 24 LTS)?", "blocks": "Cycle 1 scaffold" },
+    { "id": "DEC-GIT-INIT", "question": "Put this repository under git?", "blocks": "Cycle 1 scaffold" },
+    { "id": "DEC-DOGFOOD-MAP", "question": "Confirm local repositories for Job Agent, SwingTradePros and DaySetGo siblings.", "blocks": "Dogfood G0" }
+  ],
+  "nextRecommendedCycle": {
+    "objective": "Engine Core + Baseline Capture: scaffold engine-core and CLI, port conformance checks to golden tests, implement capture/store/ledger, discovery detectors and scoring; self-audit this repo to audit:G2.",
+    "milestoneIds": ["M1"],
+    "entryCriteria": ["audit:G1 ratified", "ADR-007 confirmed", "Repository under git"]
+  }
+}

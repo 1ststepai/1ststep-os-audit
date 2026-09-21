@@ -1,0 +1,54 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://1ststep.ai/os-audit/schemas/0.1.0/control-result.schema.json",
+  "title": "ControlResult",
+  "description": "Assessment of one control in one run. An agent or detector proposes `status` with evidence; the deterministic engine fills `level`, `evidenceCap` and `finalScore`. Key = (runId, controlId).",
+  "type": "object",
+  "required": ["kind", "schemaVersion", "runId", "controlId", "controlVersion", "domain", "applicability", "status", "evidenceIds", "proposedBy", "weight", "level", "evidenceCap", "finalScore", "findingIds", "launchBlocker"],
+  "additionalProperties": false,
+  "properties": {
+    "kind": { "const": "ControlResult" },
+    "schemaVersion": { "$ref": "audit-common.schema.json#/$defs/schemaVersion" },
+    "runId": { "$ref": "audit-common.schema.json#/$defs/runId" },
+    "controlId": { "$ref": "audit-common.schema.json#/$defs/controlId" },
+    "controlVersion": { "$ref": "audit-common.schema.json#/$defs/semver" },
+    "domain": { "$ref": "audit-common.schema.json#/$defs/domain" },
+    "applicability": {
+      "type": "object",
+      "required": ["status", "matchedProjectTypes", "reason"],
+      "properties": {
+        "status": { "enum": ["APPLICABLE", "NOT_APPLICABLE", "UNKNOWN_INCLUDED", "DECISION_REQUIRED"] },
+        "matchedProjectTypes": { "type": "array", "uniqueItems": true, "items": { "$ref": "audit-common.schema.json#/$defs/projectTypeId" } },
+        "reason": { "type": "string", "minLength": 1, "maxLength": 1000 }
+      },
+      "additionalProperties": false
+    },
+    "status": { "$ref": "audit-common.schema.json#/$defs/controlStatus" },
+    "evidenceIds": { "type": "array", "uniqueItems": true, "items": { "$ref": "audit-common.schema.json#/$defs/evidenceId" } },
+    "proposedBy": { "$ref": "audit-common.schema.json#/$defs/actor" },
+    "weight": { "type": ["number", "null"], "minimum": 0, "description": "riskWeight x max(project-type controlMultiplier). null when not applicable." },
+    "level": { "enum": [0, 25, 50, 75, 100, null], "description": "scoring.json statusLevels[status]." },
+    "evidenceCap": {
+      "type": ["object", "null"],
+      "required": ["value", "reason"],
+      "properties": {
+        "value": { "$ref": "audit-common.schema.json#/$defs/scoreValue" },
+        "limitingEvidenceId": { "$ref": "audit-common.schema.json#/$defs/evidenceId" },
+        "reason": { "enum": ["STRENGTH_CAP", "SOURCE_KIND_CAP", "LIVE_PLANE_CAP", "NO_SUPPORTING_EVIDENCE", "NONE"] }
+      },
+      "additionalProperties": false
+    },
+    "finalScore": { "oneOf": [{ "$ref": "audit-common.schema.json#/$defs/scoreValue" }, { "type": "null" }] },
+    "findingIds": { "type": "array", "uniqueItems": true, "items": { "$ref": "audit-common.schema.json#/$defs/findingId" } },
+    "launchBlocker": { "type": "boolean" },
+    "notes": { "type": "string", "maxLength": 2000 }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "applicability": { "properties": { "status": { "const": "NOT_APPLICABLE" } } } } },
+      "then": { "properties": { "status": { "const": "NOT_APPLICABLE" }, "finalScore": { "type": "null" }, "level": { "const": null }, "weight": { "type": "null" } } },
+      "else": { "properties": { "status": { "not": { "const": "NOT_APPLICABLE" } }, "finalScore": { "type": "number" }, "weight": { "type": "number" } } }
+    },
+    { "if": { "properties": { "status": { "enum": ["ABSENT", "PARTIAL", "IMPLEMENTED_UNVERIFIED", "IMPLEMENTED_STRONG", "VERIFIED"] } } }, "then": { "properties": { "evidenceIds": { "minItems": 1 } } } }
+  ]
+}

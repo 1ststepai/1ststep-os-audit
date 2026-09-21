@@ -1,0 +1,101 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://1ststep.ai/os-audit/schemas/0.1.0/control-definition.schema.json",
+  "title": "ControlDefinition",
+  "description": "One deterministic, versioned audit control. Controls bind to upstream capabilities by id (capabilityRefs); applicability reuses the upstream condition language over ProjectProfile fields.",
+  "type": "object",
+  "required": ["id", "version", "title", "domain", "capabilityRefs", "objective", "applicability", "riskWeight", "requiredPlane", "evidenceRequirements", "scoringRule", "findingTemplates", "launchBlocker"],
+  "additionalProperties": false,
+  "properties": {
+    "id": { "$ref": "audit-common.schema.json#/$defs/controlId" },
+    "version": { "$ref": "audit-common.schema.json#/$defs/semver" },
+    "title": { "type": "string", "minLength": 1, "maxLength": 160 },
+    "domain": { "$ref": "audit-common.schema.json#/$defs/domain" },
+    "capabilityRefs": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "$ref": "audit-common.schema.json#/$defs/capabilityRef" } },
+    "objective": { "type": "string", "minLength": 1, "maxLength": 1000 },
+    "applicability": {
+      "type": "object",
+      "required": ["projectTypes", "onUnknown"],
+      "properties": {
+        "projectTypes": {
+          "type": "array", "minItems": 1, "uniqueItems": true,
+          "items": { "anyOf": [{ "const": "ALL" }, { "$ref": "audit-common.schema.json#/$defs/projectTypeId" }] }
+        },
+        "all": { "type": "array", "minItems": 1, "items": { "$ref": "audit-common.schema.json#/$defs/condition" } },
+        "any": { "type": "array", "minItems": 1, "items": { "$ref": "audit-common.schema.json#/$defs/condition" } },
+        "onUnknown": { "enum": ["INCLUDE", "EXCLUDE", "RAISE_DECISION"], "description": "What to do when a referenced profile field is UNKNOWN. Risk controls should INCLUDE." }
+      },
+      "additionalProperties": false
+    },
+    "riskWeight": { "type": "integer", "minimum": 1, "maximum": 5 },
+    "requiredPlane": { "enum": ["REPOSITORY", "LIVE", "EITHER"], "description": "LIVE controls are capped (scoring.json livePlaneCap) until LIVE evidence exists." },
+    "evidenceRequirements": {
+      "type": "array", "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["sourceKinds", "minStrength", "description"],
+        "properties": {
+          "sourceKinds": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "$ref": "audit-common.schema.json#/$defs/sourceKind" } },
+          "minStrength": { "$ref": "audit-common.schema.json#/$defs/evidenceStrength" },
+          "description": { "type": "string", "minLength": 1, "maxLength": 1000 }
+        },
+        "additionalProperties": false
+      }
+    },
+    "evidenceKindCaps": {
+      "description": "Per-control override of scoring.json defaultSourceKindCaps.",
+      "type": "object",
+      "propertyNames": { "$ref": "audit-common.schema.json#/$defs/sourceKind" },
+      "additionalProperties": { "type": "integer", "minimum": 0, "maximum": 100 }
+    },
+    "scoringRule": {
+      "description": "Observable criteria for each status. The engine maps status -> level and applies caps; criteria text is what auditors must cite evidence against.",
+      "type": "object",
+      "required": ["ABSENT", "PARTIAL", "IMPLEMENTED_UNVERIFIED", "IMPLEMENTED_STRONG", "VERIFIED"],
+      "properties": {
+        "ABSENT": { "type": "string", "maxLength": 600 },
+        "PARTIAL": { "type": "string", "maxLength": 600 },
+        "IMPLEMENTED_UNVERIFIED": { "type": "string", "maxLength": 600 },
+        "IMPLEMENTED_STRONG": { "type": "string", "maxLength": 600 },
+        "VERIFIED": { "type": "string", "maxLength": 600 }
+      },
+      "additionalProperties": false
+    },
+    "automatedChecks": { "type": "array", "uniqueItems": true, "items": { "type": "string", "pattern": "^det\\.[a-z0-9_.-]{2,80}$" } },
+    "findingTemplates": {
+      "type": "array", "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["templateId", "whenStatusIn", "severity", "title", "impact", "recommendation", "verificationRequired"],
+        "properties": {
+          "templateId": { "type": "string", "pattern": "^FT-[A-Z_]{2,24}-[0-9]{3}-[A-Z]$" },
+          "whenStatusIn": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "enum": ["ABSENT", "PARTIAL", "IMPLEMENTED_UNVERIFIED", "UNVERIFIED", "BLOCKED"] } },
+          "severity": { "$ref": "audit-common.schema.json#/$defs/severity" },
+          "severityByProjectType": {
+            "type": "object",
+            "propertyNames": { "$ref": "audit-common.schema.json#/$defs/projectTypeId" },
+            "additionalProperties": { "$ref": "audit-common.schema.json#/$defs/severity" }
+          },
+          "title": { "type": "string", "minLength": 1, "maxLength": 200 },
+          "impact": { "type": "string", "minLength": 1, "maxLength": 1000 },
+          "recommendation": { "type": "string", "minLength": 1, "maxLength": 1000 },
+          "verificationRequired": { "$ref": "audit-common.schema.json#/$defs/verificationRequirement" }
+        },
+        "additionalProperties": false
+      }
+    },
+    "launchBlocker": {
+      "type": "object",
+      "required": ["enabled"],
+      "properties": {
+        "enabled": { "type": "boolean" },
+        "whenStatusIn": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "enum": ["ABSENT", "PARTIAL", "IMPLEMENTED_UNVERIFIED", "UNVERIFIED", "BLOCKED"] } },
+        "projectTypes": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "anyOf": [{ "const": "ALL" }, { "$ref": "audit-common.schema.json#/$defs/projectTypeId" }] } },
+        "rationale": { "type": "string", "maxLength": 600 }
+      },
+      "additionalProperties": false,
+      "if": { "properties": { "enabled": { "const": true } } },
+      "then": { "required": ["whenStatusIn", "projectTypes", "rationale"] }
+    }
+  }
+}

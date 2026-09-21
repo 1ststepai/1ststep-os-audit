@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://1ststep.ai/os-audit/schemas/0.1.0/control-registry.schema.json",
+  "title": "ControlRegistry",
+  "type": "object",
+  "required": ["kind", "schemaVersion", "registryVersion", "upstream", "controls"],
+  "additionalProperties": false,
+  "properties": {
+    "kind": { "const": "ControlRegistry" },
+    "schemaVersion": { "$ref": "audit-common.schema.json#/$defs/schemaVersion" },
+    "registryVersion": { "$ref": "audit-common.schema.json#/$defs/semver" },
+    "upstream": {
+      "type": "object",
+      "required": ["osSchemaVersion", "capabilityTaxonomyVersion"],
+      "properties": {
+        "osSchemaVersion": { "$ref": "audit-common.schema.json#/$defs/semver" },
+        "capabilityTaxonomyVersion": { "$ref": "audit-common.schema.json#/$defs/semver" }
+      },
+      "additionalProperties": false
+    },
+    "controls": { "type": "array", "minItems": 1, "items": { "$ref": "control-definition.schema.json" } }
+  }
+}

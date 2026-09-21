@@ -1,0 +1,135 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://1ststep.ai/os-audit/schemas/0.1.0/evidence-item.schema.json",
+  "title": "EvidenceItem",
+  "description": "One atomic, located piece of evidence. Two axes: `state` (upstream epistemic vocabulary) and `strength` (E0-E4, audit source class). Allowed pairs and per-sourceKind strength ceilings are enforced here so documentation cannot be promoted to runtime proof.",
+  "type": "object",
+  "required": ["kind", "schemaVersion", "id", "runId", "snapshotId", "claim", "sourceKind", "strength", "state", "polarity", "collectedAt", "collector", "scope", "locator"],
+  "additionalProperties": false,
+  "properties": {
+    "kind": { "const": "EvidenceItem" },
+    "schemaVersion": { "$ref": "audit-common.schema.json#/$defs/schemaVersion" },
+    "id": { "$ref": "audit-common.schema.json#/$defs/evidenceId" },
+    "runId": { "$ref": "audit-common.schema.json#/$defs/runId" },
+    "snapshotId": { "$ref": "audit-common.schema.json#/$defs/baselineId" },
+    "claim": { "type": "string", "minLength": 1, "maxLength": 1000, "description": "Auditor-authored statement of what this evidence shows. Never copied from target content." },
+    "sourceKind": { "$ref": "audit-common.schema.json#/$defs/sourceKind" },
+    "strength": { "$ref": "audit-common.schema.json#/$defs/evidenceStrength" },
+    "state": { "$ref": "audit-common.schema.json#/$defs/evidenceState" },
+    "polarity": { "enum": ["SUPPORTS", "REFUTES", "ABSENCE"], "description": "ABSENCE = searched and not found; requires searchCoverage." },
+    "collectedAt": { "$ref": "audit-common.schema.json#/$defs/timestamp" },
+    "collector": { "$ref": "audit-common.schema.json#/$defs/actor" },
+    "scope": {
+      "type": "object",
+      "required": ["controlIds"],
+      "properties": {
+        "controlIds": { "type": "array", "uniqueItems": true, "items": { "$ref": "audit-common.schema.json#/$defs/controlId" } }
+      },
+      "additionalProperties": false
+    },
+    "locator": {
+      "oneOf": [
+        { "$ref": "#/$defs/repositoryLocator" },
+        { "$ref": "#/$defs/commandLocator" },
+        { "$ref": "#/$defs/liveLocator" },
+        { "$ref": "#/$defs/humanLocator" },
+        { "$ref": "#/$defs/inferenceLocator" }
+      ]
+    },
+    "searchCoverage": {
+      "type": "object",
+      "required": ["patterns", "pathsSearched", "filesSearched"],
+      "properties": {
+        "patterns": { "type": "array", "minItems": 1, "items": { "type": "string", "maxLength": 300 } },
+        "pathsSearched": { "type": "array", "minItems": 1, "items": { "type": "string", "maxLength": 300 } },
+        "filesSearched": { "type": "integer", "minimum": 0 }
+      },
+      "additionalProperties": false
+    },
+    "redactions": {
+      "type": "array",
+      "items": {
+        "type": "object", "required": ["type", "hashPrefix"],
+        "properties": { "type": { "enum": ["SECRET", "PERSONAL_DATA", "CREDENTIAL_URL", "PROMPT_INJECTION_QUARANTINE"] }, "hashPrefix": { "type": "string", "pattern": "^[a-f0-9]{8}$" } },
+        "additionalProperties": false
+      }
+    }
+  },
+  "allOf": [
+    { "if": { "properties": { "state": { "const": "CONFIRMED" } } }, "then": { "properties": { "strength": { "const": "E4" } } } },
+    { "if": { "properties": { "state": { "const": "OBSERVED" } } }, "then": { "properties": { "strength": { "enum": ["E2", "E3"] } } } },
+    { "if": { "properties": { "state": { "const": "INFERRED" } } }, "then": { "properties": { "strength": { "const": "E1" } } } },
+    { "if": { "properties": { "state": { "const": "ASSUMED" } } }, "then": { "properties": { "strength": { "enum": ["E0", "E1"] } } } },
+    { "if": { "properties": { "state": { "enum": ["UNVERIFIED", "BLOCKED"] } } }, "then": { "properties": { "strength": { "const": "E0" } } } },
+
+    { "if": { "properties": { "sourceKind": { "enum": ["SOURCE_CODE", "CONFIGURATION", "DEPENDENCY_MANIFEST"] } } }, "then": { "properties": { "strength": { "enum": ["E0", "E1", "E2", "E3"] }, "locator": { "$ref": "#/$defs/repositoryLocator" } } } },
+    { "if": { "properties": { "sourceKind": { "const": "DOCUMENTATION" } } }, "then": { "properties": { "strength": { "enum": ["E0", "E1", "E2"] }, "locator": { "$ref": "#/$defs/repositoryLocator" } } } },
+    { "if": { "properties": { "sourceKind": { "const": "USER_ATTESTATION_ARTIFACT" } } }, "then": { "properties": { "strength": { "enum": ["E0", "E1", "E2"] }, "locator": { "$ref": "#/$defs/humanLocator" } } } },
+    { "if": { "properties": { "sourceKind": { "const": "USER_STATEMENT" } } }, "then": { "properties": { "strength": { "enum": ["E0", "E1"] }, "locator": { "$ref": "#/$defs/humanLocator" } } } },
+    { "if": { "properties": { "sourceKind": { "const": "AI_INFERENCE" } } }, "then": { "properties": { "strength": { "enum": ["E0", "E1"] }, "locator": { "$ref": "#/$defs/inferenceLocator" } } } },
+    { "if": { "properties": { "sourceKind": { "enum": ["TEST_EXECUTION", "COMMAND_OUTPUT"] } } }, "then": { "properties": { "locator": { "$ref": "#/$defs/commandLocator" } } } },
+    { "if": { "properties": { "sourceKind": { "enum": ["RUNTIME_PROBE", "EXTERNAL_SYSTEM"] } } }, "then": { "properties": { "locator": { "$ref": "#/$defs/liveLocator" } } } },
+    { "if": { "properties": { "sourceKind": { "const": "GIT_METADATA" } } }, "then": { "properties": { "locator": { "anyOf": [{ "$ref": "#/$defs/repositoryLocator" }, { "$ref": "#/$defs/commandLocator" }] } } } },
+
+    { "if": { "properties": { "polarity": { "const": "ABSENCE" } } }, "then": { "required": ["searchCoverage"] } }
+  ],
+  "$defs": {
+    "repositoryLocator": {
+      "type": "object",
+      "required": ["type", "path", "contentHash"],
+      "properties": {
+        "type": { "const": "REPOSITORY" },
+        "path": { "$ref": "audit-common.schema.json#/$defs/relativePath" },
+        "lineStart": { "type": "integer", "minimum": 1 },
+        "lineEnd": { "type": "integer", "minimum": 1 },
+        "contentHash": { "$ref": "audit-common.schema.json#/$defs/sha256", "description": "Hash of the cited file in the snapshot; citation verifier re-checks the excerpt against it." },
+        "excerpt": { "$ref": "audit-common.schema.json#/$defs/untrustedText" }
+      },
+      "additionalProperties": false
+    },
+    "commandLocator": {
+      "type": "object",
+      "required": ["type", "commandId"],
+      "properties": {
+        "type": { "const": "COMMAND" },
+        "commandId": { "type": "string", "pattern": "^CMD-[0-9]{3,}$" },
+        "outputObject": { "$ref": "audit-common.schema.json#/$defs/sha256" }
+      },
+      "additionalProperties": false
+    },
+    "liveLocator": {
+      "type": "object",
+      "required": ["type", "connectorId", "environmentClass", "observedAt", "freshUntil"],
+      "properties": {
+        "type": { "const": "LIVE" },
+        "connectorId": { "type": "string", "pattern": "^[a-z][a-z0-9-]{1,63}$" },
+        "systemId": { "type": "string", "pattern": "^SYS-[A-Z0-9-]{2,40}$" },
+        "environmentClass": { "enum": ["PRODUCTION", "STAGING", "PREVIEW", "LOCAL"] },
+        "resource": { "type": "string", "maxLength": 500, "description": "Redacted resource descriptor, e.g. `stripe:webhook_endpoints`." },
+        "observedAt": { "$ref": "audit-common.schema.json#/$defs/timestamp" },
+        "freshUntil": { "$ref": "audit-common.schema.json#/$defs/timestamp" },
+        "responseObject": { "$ref": "audit-common.schema.json#/$defs/sha256" }
+      },
+      "additionalProperties": false
+    },
+    "humanLocator": {
+      "type": "object",
+      "required": ["type", "statedBy"],
+      "properties": {
+        "type": { "const": "HUMAN" },
+        "statedBy": { "$ref": "audit-common.schema.json#/$defs/actor" },
+        "attachmentObject": { "$ref": "audit-common.schema.json#/$defs/sha256" }
+      },
+      "additionalProperties": false
+    },
+    "inferenceLocator": {
+      "type": "object",
+      "required": ["type", "basedOnEvidenceIds"],
+      "properties": {
+        "type": { "const": "INFERENCE" },
+        "basedOnEvidenceIds": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "$ref": "audit-common.schema.json#/$defs/evidenceId" } }
+      },
+      "additionalProperties": false
+    }
+  }
+}

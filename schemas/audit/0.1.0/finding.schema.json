@@ -1,0 +1,95 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://1ststep.ai/os-audit/schemas/0.1.0/finding.schema.json",
+  "title": "Finding",
+  "description": "Immutable-ID finding with append-only lifecycle history. Current fields are a projection of `history`; history entries are never edited or removed. Transition legality and verifier independence are checked by the engine (FINDING_SCHEMA.md).",
+  "type": "object",
+  "required": [
+    "kind", "schemaVersion", "id", "targetId", "fingerprint", "title", "domain", "controlId", "severity", "status",
+    "evidenceState", "evidenceStrength", "evidenceIds", "impact", "affectedSurfaces", "recommendation",
+    "verificationRequired", "owner", "dependencies", "launchBlocker", "introducedInAudit", "introducedInSnapshot",
+    "lastUpdated", "verifiedAt", "verificationEvidence", "verificationRecordIds", "history"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "kind": { "const": "Finding" },
+    "schemaVersion": { "$ref": "audit-common.schema.json#/$defs/schemaVersion" },
+    "id": { "$ref": "audit-common.schema.json#/$defs/findingId" },
+    "targetId": { "$ref": "audit-common.schema.json#/$defs/targetId" },
+    "fingerprint": { "$ref": "audit-common.schema.json#/$defs/sha256", "description": "sha256(controlId + templateId + sorted normalized affectedSurfaces). Re-audits match on this to reuse the ID instead of minting a new one." },
+    "title": { "type": "string", "minLength": 1, "maxLength": 200 },
+    "domain": { "$ref": "audit-common.schema.json#/$defs/domain" },
+    "controlId": { "$ref": "audit-common.schema.json#/$defs/controlId" },
+    "templateId": { "type": "string", "pattern": "^FT-[A-Z_]{2,24}-[0-9]{3}-[A-Z]$" },
+    "severity": { "$ref": "audit-common.schema.json#/$defs/severity" },
+    "status": { "$ref": "audit-common.schema.json#/$defs/findingStatus" },
+    "evidenceState": { "$ref": "audit-common.schema.json#/$defs/evidenceState" },
+    "evidenceStrength": { "$ref": "audit-common.schema.json#/$defs/evidenceStrength" },
+    "evidenceIds": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "$ref": "audit-common.schema.json#/$defs/evidenceId" } },
+    "impact": { "type": "string", "minLength": 1, "maxLength": 2000 },
+    "affectedSurfaces": {
+      "type": "array", "minItems": 1,
+      "items": {
+        "type": "object", "required": ["type", "ref"],
+        "properties": {
+          "type": { "enum": ["FILE", "ROUTE", "SERVICE", "ENVIRONMENT", "EXTERNAL_SYSTEM", "BUSINESS_PROCESS", "PROJECT"] },
+          "ref": { "type": "string", "minLength": 1, "maxLength": 300 }
+        },
+        "additionalProperties": false
+      }
+    },
+    "recommendation": { "type": "string", "minLength": 1, "maxLength": 2000 },
+    "verificationRequired": { "$ref": "audit-common.schema.json#/$defs/verificationRequirement" },
+    "owner": { "type": ["string", "null"], "maxLength": 100 },
+    "dependencies": { "type": "array", "uniqueItems": true, "items": { "$ref": "audit-common.schema.json#/$defs/findingId" } },
+    "launchBlocker": { "type": "boolean" },
+    "introducedInAudit": { "$ref": "audit-common.schema.json#/$defs/runId" },
+    "introducedInSnapshot": { "$ref": "audit-common.schema.json#/$defs/baselineId" },
+    "lastUpdated": { "$ref": "audit-common.schema.json#/$defs/timestamp" },
+    "verifiedAt": { "oneOf": [{ "$ref": "audit-common.schema.json#/$defs/timestamp" }, { "type": "null" }] },
+    "verificationEvidence": { "type": "array", "uniqueItems": true, "items": { "$ref": "audit-common.schema.json#/$defs/evidenceId" } },
+    "verificationRecordIds": { "type": "array", "uniqueItems": true, "items": { "$ref": "audit-common.schema.json#/$defs/verificationId" } },
+    "duplicateOf": { "$ref": "audit-common.schema.json#/$defs/findingId" },
+    "acceptedRisk": {
+      "type": "object",
+      "required": ["approvedBy", "approvalClass", "rationale", "expiresAt"],
+      "properties": {
+        "approvedBy": { "$ref": "audit-common.schema.json#/$defs/userActor" },
+        "approvalClass": { "enum": ["APPROVAL_REQUIRED", "HIGH_RISK_APPROVAL"] },
+        "rationale": { "type": "string", "minLength": 1, "maxLength": 2000 },
+        "expiresAt": { "$ref": "audit-common.schema.json#/$defs/timestamp" }
+      },
+      "additionalProperties": false
+    },
+    "history": {
+      "type": "array",
+      "minItems": 1,
+      "prefixItems": [
+        { "properties": { "seq": { "const": 1 }, "from": { "type": "null" }, "to": { "const": "OPEN" } } }
+      ],
+      "items": {
+        "type": "object",
+        "required": ["seq", "at", "from", "to", "actor", "reason"],
+        "properties": {
+          "seq": { "type": "integer", "minimum": 1 },
+          "at": { "$ref": "audit-common.schema.json#/$defs/timestamp" },
+          "from": { "oneOf": [{ "$ref": "audit-common.schema.json#/$defs/findingStatus" }, { "type": "null" }] },
+          "to": { "$ref": "audit-common.schema.json#/$defs/findingStatus" },
+          "actor": { "$ref": "audit-common.schema.json#/$defs/actor" },
+          "reason": { "type": "string", "minLength": 1, "maxLength": 2000 },
+          "runId": { "$ref": "audit-common.schema.json#/$defs/runId" },
+          "remediationTaskId": { "$ref": "audit-common.schema.json#/$defs/taskId" },
+          "verificationRecordId": { "$ref": "audit-common.schema.json#/$defs/verificationId" },
+          "evidenceIds": { "type": "array", "uniqueItems": true, "items": { "$ref": "audit-common.schema.json#/$defs/evidenceId" } }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "allOf": [
+    { "if": { "properties": { "status": { "const": "VERIFIED" } } }, "then": { "properties": { "verifiedAt": { "type": "string" }, "verificationRecordIds": { "minItems": 1 }, "verificationEvidence": { "minItems": 1 } } } },
+    { "if": { "properties": { "status": { "const": "ACCEPTED_RISK" } } }, "then": { "required": ["acceptedRisk"] } },
+    { "if": { "properties": { "status": { "const": "DUPLICATE" } } }, "then": { "required": ["duplicateOf"] } },
+    { "if": { "properties": { "status": { "not": { "const": "VERIFIED" } } } }, "then": { "properties": { "verifiedAt": { "type": "null" } } } }
+  ]
+}

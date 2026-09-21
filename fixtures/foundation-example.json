@@ -1,0 +1,176 @@
+{
+  "description": "Worked example for audit:G1. Fictional SaaS target, not a real project. Proves: schema conformance, doc-only evidence capping (CTL-AUTH-002), severity caps, launch-blocker override, as-of-time scoring (AUD-0001 is VERIFIED today but the baseline score is unchanged), finding lifecycle with independent verification, and deterministic P0 inheritance + execution order.",
+  "objects": [
+    {
+      "kind": "AuditTarget", "schemaVersion": "0.1.0", "id": "TGT-EXAMPLE-SAAS", "name": "Example SaaS (fixture)", "createdAt": "2026-09-13T04:50:00Z",
+      "source": { "type": "LOCAL_PATH", "localPath": "C:/example/saas", "vcs": "GIT" },
+      "identity": { "strength": "STRONG", "gitRootCommits": ["bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"], "normalizedRemote": "https://github.com/example/saas.git" },
+      "profile": {
+        "productTypes": { "status": "KNOWN", "value": ["WEB_SAAS"], "evidence": "OBSERVED", "source": "USER_CONFIRMED" },
+        "platformTargets": { "status": "KNOWN", "value": ["WEB"], "evidence": "OBSERVED", "source": "USER_CONFIRMED" },
+        "lifecycleStage": { "status": "KNOWN", "value": "EXISTING_RECOVERY", "evidence": "CONFIRMED", "source": "RULE_DERIVED" },
+        "dataSensitivity": { "status": "KNOWN", "value": ["PERSONAL"], "evidence": "OBSERVED", "source": "INFERRED" },
+        "auth": {
+          "needed": { "status": "KNOWN", "value": true, "evidence": "OBSERVED", "source": "INFERRED" },
+          "methods": { "status": "KNOWN", "value": ["EMAIL_PASSWORD"], "evidence": "OBSERVED", "source": "INFERRED" },
+          "multiTenant": { "status": "KNOWN", "value": true, "evidence": "OBSERVED", "source": "USER_CONFIRMED" }
+        },
+        "payments": {
+          "needed": { "status": "KNOWN", "value": true, "evidence": "OBSERVED", "source": "INFERRED" },
+          "handlesCardData": { "status": "KNOWN", "value": false, "evidence": "OBSERVED", "source": "INFERRED" }
+        },
+        "ai": {
+          "usesAI": { "status": "KNOWN", "value": false, "evidence": "OBSERVED", "source": "INFERRED" },
+          "userDataSentToModels": { "status": "NOT_APPLICABLE" },
+          "autonomousExternalActions": { "status": "NOT_APPLICABLE" }
+        },
+        "businessModel": { "status": "KNOWN", "value": ["SUBSCRIPTION"], "evidence": "OBSERVED", "source": "USER_CONFIRMED" },
+        "integrations": { "status": "KNOWN", "value": ["stripe"], "evidence": "OBSERVED", "source": "INFERRED" },
+        "auditProjectTypes": { "status": "KNOWN", "value": ["SAAS"], "evidence": "OBSERVED", "source": "RULE_DERIVED" },
+        "confirmation": { "status": "CONFIRMED", "confirmedBy": { "actorType": "USER", "actorId": "user.owner" }, "confirmedAt": "2026-09-13T04:58:00Z" }
+      },
+      "environments": [{ "name": "production", "class": "PRODUCTION", "urls": ["https://app.example.com"], "declaredBy": "USER", "confirmed": true }],
+      "externalSystems": [{ "id": "SYS-STRIPE", "category": "BILLING", "provider": "stripe", "environmentClass": "PRODUCTION", "status": "DISCOVERED_IN_CODE" }]
+    },
+    {
+      "kind": "BaselineSnapshot", "schemaVersion": "0.1.0", "id": "SNAP-0001", "targetId": "TGT-EXAMPLE-SAAS", "role": "BASELINE", "status": "FINALIZED",
+      "capturedAt": "2026-09-13T05:00:00Z", "capturedBy": { "actorType": "SYSTEM", "actorId": "osaudit.capture" }, "captureTool": { "name": "osaudit", "version": "0.1.0" },
+      "fingerprint": {
+        "vcs": "GIT",
+        "git": { "headSha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "branch": "main", "rootCommits": ["bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"], "normalizedRemote": "https://github.com/example/saas.git", "isShallow": false, "submodules": [], "worktreeCount": 1, "statusHash": "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc", "stashCount": 0 },
+        "dirty": { "isDirty": true, "modifiedCount": 2, "untrackedCount": 1, "deletedCount": 0 },
+        "contentManifest": { "algorithm": "sha256-sorted-path-v1", "fileCount": 412, "totalBytes": 3481220, "manifestHash": "sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd", "excluded": { "gitIgnoredCount": 18344, "secretCandidatePaths": [".env.local"], "oversizeCount": 0, "symlinkOutsideRootCount": 0 } },
+        "captureIntegrity": { "preCaptureManifestHash": "sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd", "postCaptureManifestHash": "sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd", "stable": true }
+      },
+      "storage": { "manifestObject": "sha256:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee", "gitBundleObject": "sha256:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff", "overlayArchiveObject": "sha256:0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a" },
+      "inventory": {
+        "languages": [{ "name": "TypeScript", "files": 301 }],
+        "manifests": ["package.json", "pnpm-lock.yaml"],
+        "scripts": [{ "source": "package.json", "name": "test", "command": { "text": "vitest run", "trust": "UNTRUSTED_EXTERNAL" } }],
+        "dependencyCounts": { "direct": 42, "dev": 31 },
+        "signals": [{ "category": "DEPENDENCIES", "detectorId": "det.deps.lockfile", "value": "pnpm-lock.yaml", "capabilityRef": "security.dependency_security", "evidenceId": "EV-0001-0003" }]
+      },
+      "commands": [
+        { "id": "CMD-001", "purpose": "SECRET_SCAN", "command": "gitleaks detect --log-opts=--all --redact", "isolation": "CONTAINER_NO_NETWORK", "status": "PASSED", "exitCode": 0, "durationMs": 8200, "outputObject": "sha256:1111111111111111111111111111111111111111111111111111111111111111" },
+        { "id": "CMD-002", "purpose": "DEPENDENCY_AUDIT", "command": "pnpm audit --json", "isolation": "CONTAINER_REGISTRY_ONLY", "status": "FAILED", "exitCode": 1, "durationMs": 4100, "outputObject": "sha256:2222222222222222222222222222222222222222222222222222222222222222" },
+        { "id": "CMD-003", "purpose": "OTHER", "command": "git ls-files", "isolation": "CONTAINER_NO_NETWORK", "status": "PASSED", "exitCode": 0, "durationMs": 90, "outputObject": "sha256:3333333333333333333333333333333333333333333333333333333333333333" }
+      ],
+      "externalEvidenceIds": [],
+      "finalization": { "finalizedAt": "2026-09-13T06:30:00Z", "finalizedBy": { "actorType": "USER", "actorId": "user.owner" }, "sealHash": "sha256:4444444444444444444444444444444444444444444444444444444444444444", "ledgerEntryHash": "sha256:5555555555555555555555555555555555555555555555555555555555555555" }
+    },
+    {
+      "kind": "AuditRun", "schemaVersion": "0.1.0", "id": "RUN-0001", "targetId": "TGT-EXAMPLE-SAAS", "runType": "BASELINE", "modes": ["LAUNCH"],
+      "snapshotId": "SNAP-0001", "baselineId": "SNAP-0001",
+      "scope": {
+        "domains": ["SECURITY", "AUTH", "DOCUMENTATION_OS"],
+        "excludedDomains": [{ "domain": "PRODUCT", "reason": "Worked example limited to three domains." }],
+        "versions": { "controlRegistry": "0.1.0", "scoringModel": "0.1.0", "projectTypeProfiles": "0.1.0", "upstreamLockHash": "sha256:6666666666666666666666666666666666666666666666666666666666666666" }
+      },
+      "agents": [{ "agentId": "security-auditor", "role": "DOMAIN_AUDITOR", "promptVersion": "0.1.0" }],
+      "stages": [{ "name": "SCORE", "status": "DONE" }],
+      "gates": [
+        { "gate": "G0", "result": "PASS", "evaluatedAt": "2026-09-13T04:58:00Z", "evidence": "Target, profile and LAUNCH mode confirmed by user.owner." },
+        { "gate": "G2", "result": "PASS", "evaluatedAt": "2026-09-13T05:10:00Z", "evidence": "Snapshot SNAP-0001 captured with stable manifest." }
+      ],
+      "status": "FINALIZED", "startedAt": "2026-09-13T05:00:00Z", "finishedAt": "2026-09-13T06:30:00Z", "blockers": []
+    },
+    {
+      "kind": "AuditRun", "schemaVersion": "0.1.0", "id": "RUN-0002", "targetId": "TGT-EXAMPLE-SAAS", "runType": "VERIFICATION", "modes": ["LAUNCH"],
+      "snapshotId": "SNAP-0002", "baselineId": "SNAP-0001",
+      "scope": { "domains": ["SECURITY"], "excludedDomains": [], "versions": { "controlRegistry": "0.1.0", "scoringModel": "0.1.0", "projectTypeProfiles": "0.1.0", "upstreamLockHash": "sha256:6666666666666666666666666666666666666666666666666666666666666666" } },
+      "agents": [{ "agentId": "verification-agent", "role": "VERIFIER", "promptVersion": "0.1.0" }],
+      "stages": [{ "name": "EXECUTE", "status": "DONE" }], "gates": [], "status": "COMPLETED", "startedAt": "2026-09-14T14:00:00Z", "finishedAt": "2026-09-14T15:00:00Z", "blockers": []
+    },
+
+    { "kind": "EvidenceItem", "schemaVersion": "0.1.0", "id": "EV-0001-0001", "runId": "RUN-0001", "snapshotId": "SNAP-0001", "claim": "Secret scan of working tree and full history reported no findings.", "sourceKind": "COMMAND_OUTPUT", "strength": "E4", "state": "CONFIRMED", "polarity": "SUPPORTS", "collectedAt": "2026-09-13T05:20:00Z", "collector": { "actorType": "SYSTEM", "actorId": "osaudit.sandbox" }, "scope": { "controlIds": ["CTL-SECURITY-001"] }, "locator": { "type": "COMMAND", "commandId": "CMD-001", "outputObject": "sha256:1111111111111111111111111111111111111111111111111111111111111111" } },
+    { "kind": "EvidenceItem", "schemaVersion": "0.1.0", "id": "EV-0001-0002", "runId": "RUN-0001", "snapshotId": "SNAP-0001", "claim": "Dependency audit reports 2 critical and 3 high advisories.", "sourceKind": "COMMAND_OUTPUT", "strength": "E4", "state": "CONFIRMED", "polarity": "REFUTES", "collectedAt": "2026-09-13T05:21:00Z", "collector": { "actorType": "SYSTEM", "actorId": "osaudit.sandbox" }, "scope": { "controlIds": ["CTL-SECURITY-002"] }, "locator": { "type": "COMMAND", "commandId": "CMD-002", "outputObject": "sha256:2222222222222222222222222222222222222222222222222222222222222222" } },
+    { "kind": "EvidenceItem", "schemaVersion": "0.1.0", "id": "EV-0001-0003", "runId": "RUN-0001", "snapshotId": "SNAP-0001", "claim": "A pnpm lockfile pins dependency versions.", "sourceKind": "DEPENDENCY_MANIFEST", "strength": "E3", "state": "OBSERVED", "polarity": "SUPPORTS", "collectedAt": "2026-09-13T05:05:00Z", "collector": { "actorType": "SYSTEM", "actorId": "osaudit.discovery" }, "scope": { "controlIds": ["CTL-SECURITY-002"] }, "locator": { "type": "REPOSITORY", "path": "pnpm-lock.yaml", "contentHash": "sha256:7777777777777777777777777777777777777777777777777777777777777777" } },
+    { "kind": "EvidenceItem", "schemaVersion": "0.1.0", "id": "EV-0001-0004", "runId": "RUN-0001", "snapshotId": "SNAP-0001", "claim": "DELETE handler for admin users performs no session or role check before deleting.", "sourceKind": "SOURCE_CODE", "strength": "E3", "state": "OBSERVED", "polarity": "REFUTES", "collectedAt": "2026-09-13T05:40:00Z", "collector": { "actorType": "AGENT", "actorId": "security-auditor" }, "scope": { "controlIds": ["CTL-AUTH-001"] }, "locator": { "type": "REPOSITORY", "path": "app/api/admin/users/route.ts", "lineStart": 1, "lineEnd": 24, "contentHash": "sha256:8888888888888888888888888888888888888888888888888888888888888888", "excerpt": { "text": "export async function DELETE(req: Request) { const { id } = await req.json(); await db.user.delete({ where: { id } }); }", "trust": "UNTRUSTED_EXTERNAL" } } },
+    { "kind": "EvidenceItem", "schemaVersion": "0.1.0", "id": "EV-0001-0005", "runId": "RUN-0001", "snapshotId": "SNAP-0001", "claim": "SECURITY.md states sessions use httpOnly secure cookies; no code evidence cited.", "sourceKind": "DOCUMENTATION", "strength": "E2", "state": "OBSERVED", "polarity": "SUPPORTS", "collectedAt": "2026-09-13T05:42:00Z", "collector": { "actorType": "AGENT", "actorId": "security-auditor" }, "scope": { "controlIds": ["CTL-AUTH-002"] }, "locator": { "type": "REPOSITORY", "path": "SECURITY.md", "contentHash": "sha256:9999999999999999999999999999999999999999999999999999999999999999" } },
+    { "kind": "EvidenceItem", "schemaVersion": "0.1.0", "id": "EV-0001-0006", "runId": "RUN-0001", "snapshotId": "SNAP-0001", "claim": "No agent authority, project definition, architecture or state files are tracked.", "sourceKind": "GIT_METADATA", "strength": "E4", "state": "CONFIRMED", "polarity": "ABSENCE", "collectedAt": "2026-09-13T05:06:00Z", "collector": { "actorType": "SYSTEM", "actorId": "osaudit.discovery" }, "scope": { "controlIds": ["CTL-DOCUMENTATION_OS-001"] }, "locator": { "type": "COMMAND", "commandId": "CMD-003" }, "searchCoverage": { "patterns": ["AGENTS.md", "CLAUDE.md", ".project-os/**", "**/ARCHITECTURE*.md", "**/CURRENT_STATE.md"], "pathsSearched": ["."], "filesSearched": 412 } },
+    { "kind": "EvidenceItem", "schemaVersion": "0.1.0", "id": "EV-0002-0001", "runId": "RUN-0002", "snapshotId": "SNAP-0002", "claim": "Dependency audit on CURRENT snapshot reports no high or critical advisories.", "sourceKind": "COMMAND_OUTPUT", "strength": "E4", "state": "CONFIRMED", "polarity": "SUPPORTS", "collectedAt": "2026-09-14T14:30:00Z", "collector": { "actorType": "SYSTEM", "actorId": "osaudit.sandbox" }, "scope": { "controlIds": ["CTL-SECURITY-002"] }, "locator": { "type": "COMMAND", "commandId": "CMD-101" } },
+
+    { "kind": "ControlResult", "schemaVersion": "0.1.0", "runId": "RUN-0001", "controlId": "CTL-SECURITY-001", "controlVersion": "0.1.0", "domain": "SECURITY", "applicability": { "status": "APPLICABLE", "matchedProjectTypes": ["SAAS"], "reason": "projectTypes ALL" }, "status": "VERIFIED", "evidenceIds": ["EV-0001-0001"], "proposedBy": { "actorType": "SYSTEM", "actorId": "det.secrets.scan_tree_and_history" }, "weight": 5, "level": 100, "evidenceCap": { "value": 100, "reason": "NONE" }, "finalScore": 100, "findingIds": [], "launchBlocker": false },
+    { "kind": "ControlResult", "schemaVersion": "0.1.0", "runId": "RUN-0001", "controlId": "CTL-SECURITY-002", "controlVersion": "0.1.0", "domain": "SECURITY", "applicability": { "status": "APPLICABLE", "matchedProjectTypes": ["SAAS"], "reason": "projectTypes ALL" }, "status": "PARTIAL", "evidenceIds": ["EV-0001-0002", "EV-0001-0003"], "proposedBy": { "actorType": "AGENT", "actorId": "security-auditor" }, "weight": 3, "level": 25, "evidenceCap": { "value": 100, "reason": "NONE" }, "finalScore": 25, "findingIds": ["AUD-0001"], "launchBlocker": false },
+    { "kind": "ControlResult", "schemaVersion": "0.1.0", "runId": "RUN-0001", "controlId": "CTL-AUTH-001", "controlVersion": "0.1.0", "domain": "AUTH", "applicability": { "status": "APPLICABLE", "matchedProjectTypes": ["SAAS"], "reason": "SAAS listed" }, "status": "PARTIAL", "evidenceIds": ["EV-0001-0004"], "proposedBy": { "actorType": "AGENT", "actorId": "security-auditor" }, "weight": 5, "level": 25, "evidenceCap": { "value": 85, "limitingEvidenceId": "EV-0001-0004", "reason": "STRENGTH_CAP" }, "finalScore": 25, "findingIds": ["AUD-0002"], "launchBlocker": true },
+    { "kind": "ControlResult", "schemaVersion": "0.1.0", "runId": "RUN-0001", "controlId": "CTL-AUTH-002", "controlVersion": "0.1.0", "domain": "AUTH", "applicability": { "status": "APPLICABLE", "matchedProjectTypes": ["SAAS"], "reason": "SAAS listed" }, "status": "IMPLEMENTED_STRONG", "evidenceIds": ["EV-0001-0005"], "proposedBy": { "actorType": "AGENT", "actorId": "security-auditor" }, "weight": 4, "level": 75, "evidenceCap": { "value": 25, "limitingEvidenceId": "EV-0001-0005", "reason": "SOURCE_KIND_CAP" }, "finalScore": 25, "findingIds": [], "launchBlocker": false, "notes": "Claimed strong on documentation alone; capped to 25." },
+    { "kind": "ControlResult", "schemaVersion": "0.1.0", "runId": "RUN-0001", "controlId": "CTL-DOCUMENTATION_OS-001", "controlVersion": "0.1.0", "domain": "DOCUMENTATION_OS", "applicability": { "status": "APPLICABLE", "matchedProjectTypes": ["SAAS"], "reason": "projectTypes ALL" }, "status": "ABSENT", "evidenceIds": ["EV-0001-0006"], "proposedBy": { "actorType": "SYSTEM", "actorId": "det.docs.project_os" }, "weight": 2, "level": 0, "evidenceCap": { "value": 100, "reason": "NONE" }, "finalScore": 0, "findingIds": ["AUD-0003"], "launchBlocker": false },
+
+    {
+      "kind": "Finding", "schemaVersion": "0.1.0", "id": "AUD-0001", "targetId": "TGT-EXAMPLE-SAAS", "fingerprint": "sha256:9a17254f57ed15cbba3363fec232279235fb18df7970d7455be280345998f83f",
+      "title": "Vulnerable or unmanaged dependencies", "domain": "SECURITY", "controlId": "CTL-SECURITY-002", "templateId": "FT-SECURITY-002-A", "severity": "HIGH", "status": "VERIFIED",
+      "evidenceState": "CONFIRMED", "evidenceStrength": "E4", "evidenceIds": ["EV-0001-0002", "EV-0001-0003"],
+      "impact": "Known exploitable vulnerabilities may be reachable.", "affectedSurfaces": [{ "type": "FILE", "ref": "pnpm-lock.yaml" }],
+      "recommendation": "Upgrade affected packages and enable automated advisory scanning.",
+      "verificationRequired": { "method": "COMMAND", "minStrength": "E4", "description": "Advisory audit clean for high/critical on CURRENT snapshot." },
+      "owner": "user.owner", "dependencies": [], "launchBlocker": false, "introducedInAudit": "RUN-0001", "introducedInSnapshot": "SNAP-0001",
+      "lastUpdated": "2026-09-14T15:00:00Z", "verifiedAt": "2026-09-14T15:00:00Z", "verificationEvidence": ["EV-0002-0001"], "verificationRecordIds": ["VER-0001"],
+      "history": [
+        { "seq": 1, "at": "2026-09-13T05:50:00Z", "from": null, "to": "OPEN", "actor": { "actorType": "AGENT", "actorId": "security-auditor" }, "reason": "Created from FT-SECURITY-002-A.", "runId": "RUN-0001", "evidenceIds": ["EV-0001-0002"] },
+        { "seq": 2, "at": "2026-09-14T10:00:00Z", "from": "OPEN", "to": "IN_PROGRESS", "actor": { "actorType": "USER", "actorId": "user.owner" }, "reason": "Started RT-0001.", "remediationTaskId": "RT-0001" },
+        { "seq": 3, "at": "2026-09-14T12:00:00Z", "from": "IN_PROGRESS", "to": "REMEDIATED", "actor": { "actorType": "USER", "actorId": "user.owner" }, "reason": "Packages upgraded; Dependabot enabled.", "remediationTaskId": "RT-0001" },
+        { "seq": 4, "at": "2026-09-14T15:00:00Z", "from": "REMEDIATED", "to": "VERIFIED", "actor": { "actorType": "AGENT", "actorId": "verification-agent" }, "reason": "VER-0001 PASS on SNAP-0002.", "runId": "RUN-0002", "verificationRecordId": "VER-0001", "evidenceIds": ["EV-0002-0001"] }
+      ]
+    },
+    {
+      "kind": "Finding", "schemaVersion": "0.1.0", "id": "AUD-0002", "targetId": "TGT-EXAMPLE-SAAS", "fingerprint": "sha256:7900a6974778ac34e16656d5e88310592b38b39975faa38bcd6c483340b370ca",
+      "title": "Privileged operations missing server-side authorization", "domain": "AUTH", "controlId": "CTL-AUTH-001", "templateId": "FT-AUTH-001-A", "severity": "HIGH", "status": "OPEN",
+      "evidenceState": "OBSERVED", "evidenceStrength": "E3", "evidenceIds": ["EV-0001-0004"],
+      "impact": "Users can read or modify data or perform actions they are not entitled to.", "affectedSurfaces": [{ "type": "ROUTE", "ref": "DELETE /api/admin/users" }],
+      "recommendation": "Enforce authorization in server handlers for each listed route and add negative tests.",
+      "verificationRequired": { "method": "TEST", "minStrength": "E4", "description": "Negative authorization tests pass for every listed route." },
+      "owner": null, "dependencies": [], "launchBlocker": true, "introducedInAudit": "RUN-0001", "introducedInSnapshot": "SNAP-0001",
+      "lastUpdated": "2026-09-13T05:50:00Z", "verifiedAt": null, "verificationEvidence": [], "verificationRecordIds": [],
+      "history": [{ "seq": 1, "at": "2026-09-13T05:50:00Z", "from": null, "to": "OPEN", "actor": { "actorType": "AGENT", "actorId": "security-auditor" }, "reason": "Created from FT-AUTH-001-A.", "runId": "RUN-0001", "evidenceIds": ["EV-0001-0004"] }]
+    },
+    {
+      "kind": "Finding", "schemaVersion": "0.1.0", "id": "AUD-0003", "targetId": "TGT-EXAMPLE-SAAS", "fingerprint": "sha256:061483e0b14f6871a23b74b5dea7c1c14548d5ca75c03b4391ff7ce14fdd17f0",
+      "title": "Project OS missing or stale", "domain": "DOCUMENTATION_OS", "controlId": "CTL-DOCUMENTATION_OS-001", "templateId": "FT-DOCUMENTATION_OS-001-A", "severity": "MEDIUM", "status": "OPEN",
+      "evidenceState": "CONFIRMED", "evidenceStrength": "E4", "evidenceIds": ["EV-0001-0006"],
+      "impact": "AI agents and contributors work from wrong assumptions; recovery cannot be governed.", "affectedSurfaces": [{ "type": "PROJECT", "ref": "repository root" }],
+      "recommendation": "Generate Project OS via 1stStep OS handoff from confirmed audit facts.",
+      "verificationRequired": { "method": "COMMAND", "minStrength": "E4", "description": "Project OS state validates and matches CURRENT snapshot." },
+      "owner": null, "dependencies": [], "launchBlocker": false, "introducedInAudit": "RUN-0001", "introducedInSnapshot": "SNAP-0001",
+      "lastUpdated": "2026-09-13T05:50:00Z", "verifiedAt": null, "verificationEvidence": [], "verificationRecordIds": [],
+      "history": [{ "seq": 1, "at": "2026-09-13T05:50:00Z", "from": null, "to": "OPEN", "actor": { "actorType": "SYSTEM", "actorId": "det.docs.project_os" }, "reason": "Created from FT-DOCUMENTATION_OS-001-A.", "runId": "RUN-0001", "evidenceIds": ["EV-0001-0006"] }]
+    },
+
+    { "kind": "DimensionScore", "schemaVersion": "0.1.0", "runId": "RUN-0001", "domain": "SECURITY", "included": true, "weight": 5, "controls": [{ "controlId": "CTL-SECURITY-001", "weight": 5, "finalScore": 100 }, { "controlId": "CTL-SECURITY-002", "weight": 3, "finalScore": 25 }], "rawScore": 71.9, "caps": [{ "type": "SEVERITY_HIGH", "limit": 70, "binding": true, "findingIds": ["AUD-0001"], "reason": "Open HIGH finding caps dimension at 70." }], "score": 70, "findingIds": ["AUD-0001"], "unverifiedControlIds": [], "cappedControlIds": [] },
+    { "kind": "DimensionScore", "schemaVersion": "0.1.0", "runId": "RUN-0001", "domain": "AUTH", "included": true, "weight": 5, "controls": [{ "controlId": "CTL-AUTH-001", "weight": 5, "finalScore": 25 }, { "controlId": "CTL-AUTH-002", "weight": 4, "finalScore": 25 }], "rawScore": 25, "caps": [{ "type": "SEVERITY_HIGH", "limit": 70, "binding": false, "findingIds": ["AUD-0002"], "reason": "Open HIGH finding caps dimension at 70." }], "score": 25, "findingIds": ["AUD-0002"], "unverifiedControlIds": [], "cappedControlIds": ["CTL-AUTH-002"] },
+    { "kind": "DimensionScore", "schemaVersion": "0.1.0", "runId": "RUN-0001", "domain": "DOCUMENTATION_OS", "included": true, "weight": 2, "controls": [{ "controlId": "CTL-DOCUMENTATION_OS-001", "weight": 2, "finalScore": 0 }], "rawScore": 0, "caps": [], "score": 0, "findingIds": ["AUD-0003"], "unverifiedControlIds": [], "cappedControlIds": [] },
+
+    {
+      "kind": "ReadinessScore", "schemaVersion": "0.1.0", "runId": "RUN-0001", "targetId": "TGT-EXAMPLE-SAAS", "snapshotRole": "BASELINE", "scoredAt": "2026-09-13T06:00:00Z",
+      "versions": { "controlRegistry": "0.1.0", "scoringModel": "0.1.0", "projectTypeProfiles": "0.1.0", "upstreamLockHash": "sha256:6666666666666666666666666666666666666666666666666666666666666666" },
+      "projectTypes": ["SAAS"], "inputsHash": "sha256:ae1ccc4986f39f97c250146595f01323749d9aadd974336eb1fd469f01ea33e2",
+      "dimensions": [{ "domain": "SECURITY", "weight": 5, "score": 70 }, { "domain": "AUTH", "weight": 5, "score": 25 }, { "domain": "DOCUMENTATION_OS", "weight": 2, "score": 0 }],
+      "uncappedScore": 39.6, "caps": [{ "type": "LAUNCH_BLOCKER", "limit": 49, "binding": false, "findingIds": ["AUD-0002"], "reason": "Open launch blocker caps overall at 49." }], "score": 39.6,
+      "label": "HIGH_RISK_RECOVERY_REQUIRED", "launchBlocked": true, "launchBlockerFindingIds": ["AUD-0002"], "acceptedRiskFindingIds": [],
+      "confidence": { "level": "HIGH", "strongEvidenceWeightRatio": 0.789, "unverifiedControlCount": 0, "launchBlockerControlsEvidenced": true }
+    },
+
+    { "kind": "VerificationRecord", "schemaVersion": "0.1.0", "id": "VER-0001", "findingId": "AUD-0001", "remediationTaskId": "RT-0001", "runId": "RUN-0002", "snapshotId": "SNAP-0002", "verifier": { "actorType": "AGENT", "actorId": "verification-agent" }, "remediatedBy": { "actorType": "USER", "actorId": "user.owner" }, "method": "COMMAND", "evidenceIds": ["EV-0002-0001"], "result": "PASS", "verifiedAt": "2026-09-14T15:00:00Z" },
+
+    { "kind": "RemediationTask", "schemaVersion": "0.1.0", "id": "RT-0001", "planId": "RP-0001", "findingIds": ["AUD-0001"], "priority": "P0", "priorityReason": "HIGH in SECURITY", "taskType": "CODE_CHANGE", "title": "Upgrade vulnerable dependencies and enable advisory scanning", "rationale": "AUD-0001: critical advisories in lockfile.", "dependencies": [], "effort": "S", "scope": { "allowedPaths": ["package.json", "pnpm-lock.yaml", ".github/dependabot.yml"], "externalSystems": [], "prohibited": ["Changing application code beyond compile fixes"] }, "acceptanceCriteria": ["pnpm audit reports no high/critical advisories", "Dependabot config committed"], "tests": ["pnpm test"], "verification": { "method": "COMMAND", "minStrength": "E4", "description": "Advisory audit clean on CURRENT snapshot." }, "owner": "user.owner", "approvalClass": "AUTO_ALLOWED", "status": "DONE", "promptPath": "recovery/prompts/RT-0001.md" },
+    { "kind": "RemediationTask", "schemaVersion": "0.1.0", "id": "RT-0002", "planId": "RP-0001", "findingIds": ["AUD-0002"], "priority": "P0", "priorityReason": "Launch blocker", "taskType": "CODE_CHANGE", "title": "Enforce server-side authorization on admin routes", "rationale": "AUD-0002: DELETE /api/admin/users unauthenticated.", "dependencies": ["RT-0003"], "effort": "M", "scope": { "allowedPaths": ["app/api/admin/**", "lib/auth/**", "tests/**"], "externalSystems": [], "prohibited": ["Changing auth provider configuration", "Database schema changes"] }, "acceptanceCriteria": ["Every admin route rejects unauthenticated and non-admin callers server-side"], "tests": ["Negative authorization tests per admin route"], "verification": { "method": "TEST", "minStrength": "E4", "description": "Negative authorization tests pass." }, "owner": null, "approvalClass": "AUTO_ALLOWED", "status": "PROPOSED", "promptPath": "recovery/prompts/RT-0002.md" },
+    { "kind": "RemediationTask", "schemaVersion": "0.1.0", "id": "RT-0003", "planId": "RP-0001", "findingIds": ["AUD-0003"], "priority": "P0", "priorityReason": "MEDIUM in DOCUMENTATION_OS (P2) inherited P0 from dependent RT-0002", "taskType": "PROJECT_OS_DOC", "title": "Establish Project OS authority files before agent-driven code changes", "rationale": "AUD-0003: agents need scope rules before touching authorization code.", "dependencies": [], "effort": "S", "scope": { "allowedPaths": ["AGENTS.md", "PROJECT.md", "ARCHITECTURE.md", "SECURITY.md", "DECISIONS.md", "state/**", ".project-os/**"], "externalSystems": [], "prohibited": ["Application code changes"] }, "acceptanceCriteria": ["Project OS files generated from confirmed audit facts", ".project-os state validates"], "tests": [], "verification": { "method": "COMMAND", "minStrength": "E4", "description": "Project OS validation passes." }, "owner": "user.owner", "approvalClass": "ASSISTED", "status": "APPROVED", "projectOsFiles": ["AGENTS.md", "PROJECT.md", "ARCHITECTURE.md", "SECURITY.md", "DECISIONS.md", "state/CURRENT_STATE.md", ".project-os/manifest.json"] },
+
+    {
+      "kind": "RecoveryPlan", "schemaVersion": "0.1.0", "id": "RP-0001", "targetId": "TGT-EXAMPLE-SAAS", "baselineId": "SNAP-0001", "baselineRunId": "RUN-0001", "currentRunId": "RUN-0002",
+      "createdAt": "2026-09-13T07:00:00Z", "status": "IN_PROGRESS", "approvedBy": { "actorType": "USER", "actorId": "user.owner" },
+      "taskIds": ["RT-0001", "RT-0002", "RT-0003"], "executionOrder": ["RT-0001", "RT-0003", "RT-0002"],
+      "priorities": { "P0": ["RT-0001", "RT-0002", "RT-0003"], "P1": [], "P2": [] },
+      "delta": { "comparable": true, "reason": "Same registry/scoring/profile versions; RUN-0002 is a partial verification run (not rescored).", "baselineScore": 39.6, "findingStatusCounts": { "OPEN": 2, "VERIFIED": 1 } },
+      "projectOsHandoff": {
+        "upstreamSchemaVersion": "0.1.0", "profileDraftPath": "handoff/project-profile.draft.json",
+        "capabilityGaps": [
+          { "capabilityRef": "backend.authorization", "findingIds": ["AUD-0002"], "controlIds": ["CTL-AUTH-001"] },
+          { "capabilityRef": "recovery.os_recovery", "findingIds": ["AUD-0003"], "controlIds": ["CTL-DOCUMENTATION_OS-001"] }
+        ],
+        "requestedModules": [], "targetFiles": ["AGENTS.md", "PROJECT.md", "ARCHITECTURE.md", "SECURITY.md", "DECISIONS.md", "state/CURRENT_STATE.md", ".project-os/manifest.json"],
+        "generatorStatus": "NOT_SENT"
+      },
+      "unresolved": [{ "id": "DEC-001", "question": "Which roles may delete users?", "blocking": true, "findingIds": ["AUD-0002"] }]
+    }
+  ]
+}

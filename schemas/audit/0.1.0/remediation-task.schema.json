@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://1ststep.ai/os-audit/schemas/0.1.0/remediation-task.schema.json",
+  "title": "RemediationTask",
+  "description": "A scoped unit of recovery work. Always linked to findings. Completing a task can move findings to REMEDIATED only; VERIFIED needs a VerificationRecord.",
+  "type": "object",
+  "required": ["kind", "schemaVersion", "id", "planId", "findingIds", "priority", "taskType", "title", "rationale", "dependencies", "scope", "acceptanceCriteria", "tests", "verification", "owner", "approvalClass", "status"],
+  "additionalProperties": false,
+  "properties": {
+    "kind": { "const": "RemediationTask" },
+    "schemaVersion": { "$ref": "audit-common.schema.json#/$defs/schemaVersion" },
+    "id": { "$ref": "audit-common.schema.json#/$defs/taskId" },
+    "planId": { "$ref": "audit-common.schema.json#/$defs/planId" },
+    "findingIds": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "$ref": "audit-common.schema.json#/$defs/findingId" } },
+    "priority": { "$ref": "audit-common.schema.json#/$defs/priority" },
+    "priorityReason": { "type": "string", "maxLength": 500 },
+    "taskType": {
+      "enum": ["EVIDENCE_COLLECTION", "DECISION_REQUIRED", "CODE_CHANGE", "CONFIG_CHANGE", "EXTERNAL_SYSTEM_CHANGE", "PROJECT_OS_DOC", "BUSINESS_ARTIFACT"],
+      "description": "UNVERIFIED controls produce EVIDENCE_COLLECTION first, never speculative code changes."
+    },
+    "title": { "type": "string", "minLength": 1, "maxLength": 200 },
+    "rationale": { "type": "string", "minLength": 1, "maxLength": 2000 },
+    "dependencies": { "type": "array", "uniqueItems": true, "items": { "$ref": "audit-common.schema.json#/$defs/taskId" } },
+    "effort": { "enum": ["S", "M", "L", "XL"] },
+    "scope": {
+      "type": "object",
+      "required": ["allowedPaths", "externalSystems", "prohibited"],
+      "properties": {
+        "allowedPaths": { "type": "array", "items": { "type": "string", "maxLength": 300 }, "description": "Globs relative to target root." },
+        "externalSystems": { "type": "array", "items": { "type": "string", "pattern": "^SYS-[A-Z0-9-]{2,40}$" } },
+        "prohibited": { "type": "array", "items": { "type": "string", "maxLength": 300 } }
+      },
+      "additionalProperties": false
+    },
+    "acceptanceCriteria": { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 1, "maxLength": 500 } },
+    "tests": { "type": "array", "items": { "type": "string", "maxLength": 500 } },
+    "verification": { "$ref": "audit-common.schema.json#/$defs/verificationRequirement" },
+    "owner": { "type": ["string", "null"], "maxLength": 100 },
+    "approvalClass": { "$ref": "audit-common.schema.json#/$defs/approvalClass" },
+    "status": { "enum": ["PROPOSED", "APPROVED", "IN_PROGRESS", "DONE", "BLOCKED", "CANCELLED"] },
+    "promptPath": { "$ref": "audit-common.schema.json#/$defs/relativePath", "description": "Generated scoped remediation prompt." },
+    "projectOsFiles": { "type": "array", "uniqueItems": true, "items": { "$ref": "audit-common.schema.json#/$defs/relativePath" } }
+  },
+  "allOf": [
+    { "if": { "properties": { "taskType": { "const": "EXTERNAL_SYSTEM_CHANGE" } } }, "then": { "properties": { "approvalClass": { "enum": ["APPROVAL_REQUIRED", "HIGH_RISK_APPROVAL"] }, "scope": { "properties": { "externalSystems": { "minItems": 1 } } } } } }
+  ]
+}

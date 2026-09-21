@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://1ststep.ai/os-audit/schemas/0.1.0/verification-record.schema.json",
+  "title": "VerificationRecord",
+  "description": "Independent verification of a remediated finding against a CURRENT snapshot (never the baseline). Engine rules: verifier != remediatedBy; evidence strength >= finding.verificationRequired.minStrength; evidence collectedAt > remediation transition time.",
+  "type": "object",
+  "required": ["kind", "schemaVersion", "id", "findingId", "runId", "snapshotId", "verifier", "remediatedBy", "method", "evidenceIds", "result", "verifiedAt"],
+  "additionalProperties": false,
+  "properties": {
+    "kind": { "const": "VerificationRecord" },
+    "schemaVersion": { "$ref": "audit-common.schema.json#/$defs/schemaVersion" },
+    "id": { "$ref": "audit-common.schema.json#/$defs/verificationId" },
+    "findingId": { "$ref": "audit-common.schema.json#/$defs/findingId" },
+    "remediationTaskId": { "$ref": "audit-common.schema.json#/$defs/taskId" },
+    "runId": { "$ref": "audit-common.schema.json#/$defs/runId" },
+    "snapshotId": { "$ref": "audit-common.schema.json#/$defs/baselineId" },
+    "verifier": { "$ref": "audit-common.schema.json#/$defs/actor" },
+    "remediatedBy": { "$ref": "audit-common.schema.json#/$defs/actor" },
+    "method": { "$ref": "audit-common.schema.json#/$defs/verificationMethod" },
+    "evidenceIds": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "$ref": "audit-common.schema.json#/$defs/evidenceId" } },
+    "result": { "enum": ["PASS", "FAIL", "INCONCLUSIVE"] },
+    "verifiedAt": { "$ref": "audit-common.schema.json#/$defs/timestamp" },
+    "notes": { "type": "string", "maxLength": 2000 }
+  }
+}

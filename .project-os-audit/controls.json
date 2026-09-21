@@ -1,0 +1,4129 @@
+{
+  "kind": "ControlRegistry",
+  "schemaVersion": "0.1.0",
+  "registryVersion": "0.1.1",
+  "upstream": {
+    "osSchemaVersion": "0.1.0",
+    "capabilityTaxonomyVersion": "0.1.0"
+  },
+  "controls": [
+    {
+      "id": "CTL-PRODUCT-001",
+      "version": "0.1.0",
+      "title": "Problem, users and scope are defined",
+      "domain": "PRODUCT",
+      "capabilityRefs": [
+        "product.product_strategy",
+        "product.jtbd"
+      ],
+      "objective": "The target users, problem, core jobs and non-goals are written down and consistent with what the product actually implements.",
+      "applicability": {
+        "projectTypes": [
+          "ALL"
+        ],
+        "onUnknown": "INCLUDE"
+      },
+      "riskWeight": 2,
+      "requiredPlane": "EITHER",
+      "evidenceRequirements": [
+        {
+          "sourceKinds": [
+            "DOCUMENTATION",
+            "SOURCE_CODE"
+          ],
+          "minStrength": "E2",
+          "description": "Product definition doc cross-checked against implemented routes/features."
+        }
+      ],
+      "evidenceKindCaps": {
+        "DOCUMENTATION": 70
+      },
+      "scoringRule": {
+        "ABSENT": "No product definition anywhere.",
+        "PARTIAL": "Fragments (README tagline) without users/problem/scope.",
+        "IMPLEMENTED_UNVERIFIED": "Definition exists but not cross-checked to implementation.",
+        "IMPLEMENTED_STRONG": "Definition matches implemented feature surface.",
+        "VERIFIED": "Definition confirmed by owner and matched to live product."
+      },
+      "findingTemplates": [
+        {
+          "templateId": "FT-PRODUCT-001-B",
+          "whenStatusIn": [
+            "ABSENT"
+          ],
+          "severity": "MEDIUM",
+          "title": "Not implemented: problem, users and scope are defined",
+          "impact": "No implementation was found. If launched without it: Prioritization, positioning and remediation scope cannot be judged against intent.",
+          "recommendation": "Implement before launch: The target users, problem, core jobs and non-goals are written down and consistent with what the product actually implements.",
+          "verificationRequired": {
+            "method": "HUMAN_REVIEW",
+            "minStrength": "E2",
+            "description": "Owner confirms profile; auditor matches features."
+          }
+        },
+        {
+          "templateId": "FT-PRODUCT-001-A",
+          "whenStatusIn": [
+            "PARTIAL"
+          ],
+          "severity": "MEDIUM",
+          "title": "Product definition missing or incomplete",
+          "impact": "Prioritization, positioning and remediation scope cannot be judged against intent.",
+          "recommendation": "Generate PROJECT.md / ProjectProfile from confirmed owner input and discovered features.",
+          "verificationRequired": {
+            "method": "HUMAN_REVIEW",
+            "minStrength": "E2",
+            "description": "Owner confirms profile; auditor matches features."
+          }
+        }
+      ],
+      "launchBlocker": {
+        "enabled": false
+      }
+    },
+    {
+      "id": "CTL-ARCHITECTURE-001",
+      "version": "0.1.0",
+      "title": "Architecture boundaries are explicit and match the code",
+      "domain": "ARCHITECTURE",
+      "capabilityRefs": [
+        "recovery.architecture_inference",
+        "docs.architecture_docs"
+      ],
+      "objective": "Components, data flow and trust boundaries are identifiable in code structure and documented consistently.",
+      "applicability": {
+        "projectTypes": [
+          "ALL"
+        ],
+        "onUnknown": "INCLUDE"
+      },
+      "riskWeight": 3,
+      "requiredPlane": "REPOSITORY",
+      "evidenceRequirements": [
+        {
+          "sourceKinds": [
+            "SOURCE_CODE",
+            "CONFIGURATION"
+          ],
+          "minStrength": "E3",
+          "description": "Module/directory structure and import graph show the boundaries."
+        }
+      ],
+      "scoringRule": {
+        "ABSENT": "No discernible boundaries (UI, data access and secrets mixed freely).",
+        "PARTIAL": "Some separation; server/client or data-access boundaries leak.",
+        "IMPLEMENTED_UNVERIFIED": "Boundaries visible but undocumented or unchecked.",
+        "IMPLEMENTED_STRONG": "Boundaries clear in code and docs agree with code.",
+        "VERIFIED": "Boundaries enforced by tooling (lint rules/import constraints) that ran."
+      },
+      "findingTemplates": [
+        {
+          "templateId": "FT-ARCHITECTURE-001-B",
+          "whenStatusIn": [
+            "ABSENT"
+          ],
+          "severity": "MEDIUM",
+          "title": "Not implemented: architecture boundaries are explicit and match the code",
+          "impact": "No implementation was found. If launched without it: Changes have unpredictable blast radius; security boundaries are hard to reason about.",
+          "recommendation": "Implement before launch: Components, data flow and trust boundaries are identifiable in code structure and documented consistently.",
+          "verificationRequired": {
+            "method": "CODE_REVIEW",
+            "minStrength": "E3",
+            "description": "Re-inspect boundaries in CURRENT snapshot."
+          }
+        },
+        {
+          "templateId": "FT-ARCHITECTURE-001-A",
+          "whenStatusIn": [
+            "PARTIAL"
+          ],
+          "severity": "MEDIUM",
+          "title": "Architecture boundaries unclear or leaking",
+          "impact": "Changes have unpredictable blast radius; security boundaries are hard to reason about.",
+          "recommendation": "Document inferred architecture and fix the leaking boundaries listed in evidence.",
+          "verificationRequired": {
+            "method": "CODE_REVIEW",
+            "minStrength": "E3",
+            "description": "Re-inspect boundaries in CURRENT snapshot."
+          }
+        }
+      ],
+      "launchBlocker": {
+        "enabled": false
+      }
+    },
+    {
+      "id": "CTL-ARCHITECTURE-002",
+      "version": "0.1.0",
+      "title": "Environment configuration is separated from code",
+      "domain": "ARCHITECTURE",
+      "capabilityRefs": [
+        "infra.environments",
+        "infra.secrets"
+      ],
+      "objective": "Environment-specific values come from configuration/secret stores; production and test settings cannot be confused.",
+      "applicability": {
+        "projectTypes": [
+          "ALL"
+        ],
+        "onUnknown": "INCLUDE"
+      },
+      "riskWeight": 3,
+      "requiredPlane": "REPOSITORY",
+      "evidenceRequirements": [
+        {
+          "sourceKinds": [
+            "SOURCE_CODE",
+            "CONFIGURATION"
+          ],
+          "minStrength": "E3",
+          "description": "Env var usage, example env files, hard-coded URLs/keys search."
+        }
+      ],
+      "scoringRule": {
+        "ABSENT": "Environment values hard-coded throughout.",
+        "PARTIAL": "Mixed: some env vars, some hard-coded endpoints/flags.",
+        "IMPLEMENTED_UNVERIFIED": "Env-driven config, no validation of required vars.",
+        "IMPLEMENTED_STRONG": "Env-driven with schema validation at startup and documented example.",
+        "VERIFIED": "Startup validation executed and fails closed on missing vars."
+      },
+      "findingTemplates": [
+        {
+          "templateId": "FT-ARCHITECTURE-002-B",
+          "whenStatusIn": [
+            "ABSENT"
+          ],
+          "severity": "MEDIUM",
+          "title": "Not implemented: environment configuration is separated from code",
+          "impact": "No implementation was found. If launched without it: Risk of production/test confusion and secret exposure.",
+          "recommendation": "Implement before launch: Environment-specific values come from configuration/secret stores; production and test settings cannot be confused.",
+          "verificationRequired": {
+            "method": "CODE_REVIEW",
+            "minStrength": "E3",
+            "description": "Search CURRENT snapshot for hard-coded environment values."
+          }
+        },
+        {
+          "templateId": "FT-ARCHITECTURE-002-A",
+          "whenStatusIn": [
+            "PARTIAL"
+          ],
+          "severity": "MEDIUM",
+          "title": "Environment configuration hard-coded",
+          "impact": "Risk of production/test confusion and secret exposure.",
+          "recommendation": "Move environment values to validated configuration.",
+          "verificationRequired": {
+            "method": "CODE_REVIEW",
+            "minStrength": "E3",
+            "description": "Search CURRENT snapshot for hard-coded environment values."
+          }
+        }
+      ],
+      "launchBlocker": {
+        "enabled": false
+      }
+    },
+    {
+      "id": "CTL-CODE_QUALITY-001",
+      "version": "0.1.0",
+      "title": "Typecheck, lint and build pass",
+      "domain": "CODE_QUALITY",
+      "capabilityRefs": [
+        "team.code_review",
+        "recovery.tech_debt"
+      ],
+      "objective": "The project's own typecheck/lint/build commands exist and pass on the snapshot.",
+      "applicability": {
+        "projectTypes": [
+          "ALL"
+        ],
+        "onUnknown": "INCLUDE"
+      },
+      "riskWeight": 3,
+      "requiredPlane": "REPOSITORY",
+      "evidenceRequirements": [
+        {
+          "sourceKinds": [
+            "COMMAND_OUTPUT"
+          ],
+          "minStrength": "E4",
+          "description": "Sandboxed execution of declared build/typecheck/lint scripts."
+        }
+      ],
+      "scoringRule": {
+        "ABSENT": "No build/lint/typecheck tooling configured.",
+        "PARTIAL": "Tooling configured but commands fail.",
+        "IMPLEMENTED_UNVERIFIED": "Tooling configured, not executed.",
+        "IMPLEMENTED_STRONG": "Commands pass with warnings or partial coverage (e.g. lint excludes large areas).",
+        "VERIFIED": "All declared commands pass cleanly in sandbox."
+      },
+      "automatedChecks": [
+        "det.scripts.build_lint_typecheck"
+      ],
+      "findingTemplates": [
+        {
+          "templateId": "FT-CODE_QUALITY-001-B",
+          "whenStatusIn": [
+            "ABSENT"
+          ],
+          "severity": "MEDIUM",
+          "severityByProjectType": {
+            "FINTECH_TRADING": "HIGH"
+          },
+          "title": "Not implemented: typecheck, lint and build pass",
+          "impact": "No implementation was found. If launched without it: Defects reach users undetected; remediation cannot be verified mechanically.",
+          "recommendation": "Implement before launch: The project's own typecheck/lint/build commands exist and pass on the snapshot.",
+          "verificationRequired": {
+            "method": "COMMAND",
+            "minStrength": "E4",
+            "description": "Commands pass in sandbox on CURRENT snapshot."
+          }
+        },
+        {
+          "templateId": "FT-CODE_QUALITY-001-A",
+          "whenStatusIn": [
+            "PARTIAL"
+          ],
+          "severity": "MEDIUM",
+          "severityByProjectType": {
+            "FINTECH_TRADING": "HIGH"
+          },
+          "title": "Build, lint or typecheck missing or failing",
+          "impact": "Defects reach users undetected; remediation cannot be verified mechanically.",
+          "recommendation": "Configure and fix build/typecheck/lint until they pass.",
+          "verificationRequired": {
+            "method": "COMMAND",
+            "minStrength": "E4",
+            "description": "Commands pass in sandbox on CURRENT snapshot."
+          }
+        }
+      ],
+      "launchBlocker": {
+        "enabled": false
+      }
+    },
+    {
+      "id": "CTL-SECURITY-001",
+      "version": "0.1.0",
+      "title": "No secrets committed to the repository",
+      "domain": "SECURITY",
+      "capabilityRefs": [
+        "security.secret_scanning",
+        "infra.secrets"
+      ],
+      "objective": "No live credentials exist in tracked files or git history.",
+      "applicability": {
+        "projectTypes": [
+          "ALL"
+        ],
+        "onUnknown": "INCLUDE"
+      },
+      "riskWeight": 5,
+      "requiredPlane": "REPOSITORY",
+      "evidenceRequirements": [
+        {
+          "sourceKinds": [
+            "COMMAND_OUTPUT"
+          ],
+          "minStrength": "E4",
+          "description": "Secret scanner over working tree and full git history (values redacted)."
+        }
+      ],
+      "scoringRule": {
+        "ABSENT": "Live-format secrets found in tree or history.",
+        "PARTIAL": "Secrets only in history or test-format keys of unknown validity.",
+        "IMPLEMENTED_UNVERIFIED": "No secrets seen in manual review; scanner not run.",
+        "IMPLEMENTED_STRONG": "Scanner clean on working tree; history not scanned.",
+        "VERIFIED": "Scanner clean on tree and full history."
+      },
+      "automatedChecks": [
+        "det.secrets.scan_tree_and_history"
+      ],
+      "findingTemplates": [
+        {
+          "templateId": "FT-SECURITY-001-A",
+          "whenStatusIn": [
+            "ABSENT",
+            "PARTIAL"
+          ],
+          "severity": "CRITICAL",
+          "title": "Secrets committed to repository",
+          "impact": "Credential compromise of connected systems.",
+          "recommendation": "Rotate the credential at the provider first, then purge from history and add pre-commit scanning.",
+          "verificationRequired": {
+            "method": "EXTERNAL_SYSTEM",
+            "minStrength": "E4",
+            "description": "Provider shows key revoked/rotated and scanner clean on CURRENT snapshot."
+          }
+        }
+      ],
+      "launchBlocker": {
+        "enabled": true,
+        "whenStatusIn": [
+          "ABSENT"
+        ],
+        "projectTypes": [
+          "ALL"
+        ],
+        "rationale": "A committed live credential is exploitable regardless of product type."
+      }
+    },
+    {
+      "id": "CTL-SECURITY-002",
+      "version": "0.1.0",
+      "title": "Dependency vulnerabilities are managed",
+      "domain": "SECURITY",
+      "capabilityRefs": [
+        "security.dependency_security",
+        "security.vulnerability_management"
+      ],
+      "objective": "Dependencies are locked, scanned, and known high/critical advisories are addressed or tracked.",
+      "applicability": {
+        "projectTypes": [
+          "ALL"
+        ],
+        "onUnknown": "INCLUDE"
+      },
+      "riskWeight": 3,
+      "requiredPlane": "REPOSITORY",
+      "evidenceRequirements": [
+        {
+          "sourceKinds": [
+            "COMMAND_OUTPUT",
+            "DEPENDENCY_MANIFEST",
+            "CONFIGURATION"
+          ],
+          "minStrength": "E3",
+          "description": "Lockfile present; offline advisory audit output; update automation config."
+        }
+      ],
+      "scoringRule": {
+        "ABSENT": "No lockfile and no scanning.",
+        "PARTIAL": "Lockfile present; unaddressed high/critical advisories or no scanning.",
+        "IMPLEMENTED_UNVERIFIED": "Scanning configured (e.g. Dependabot) but results not inspected.",
+        "IMPLEMENTED_STRONG": "Scan run; only low/moderate advisories remain.",
+        "VERIFIED": "Scan run clean and automated scanning active on default branch."
+      },
+      "automatedChecks": [
+        "det.deps.lockfile",
+        "det.deps.advisory_audit"
+      ],
+      "findingTemplates": [
+        {
+          "templateId": "FT-SECURITY-002-B",
+          "whenStatusIn": [
+            "ABSENT"
+          ],
+          "severity": "HIGH",
+          "title": "Not implemented: dependency vulnerabilities are managed",
+          "impact": "No implementation was found. If launched without it: Known exploitable vulnerabilities may be reachable.",
+          "recommendation": "Implement before launch: Dependencies are locked, scanned, and known high/critical advisories are addressed or tracked.",
+          "verificationRequired": {
+            "method": "COMMAND",
+            "minStrength": "E4",
+            "description": "Advisory audit clean for high/critical on CURRENT snapshot."
+          }
+        },
+        {
+          "templateId": "FT-SECURITY-002-A",
+          "whenStatusIn": [
+            "PARTIAL"
+          ],
+          "severity": "HIGH",
+          "title": "Dependency vulnerabilities are not managed",
+          "impact": "Known exploitable vulnerabilities may be reachable.",
+          "recommendation": "Upgrade affected packages and enable automated advisory scanning.",
+          "verificationRequired": {
+            "method": "COMMAND",
+            "minStrength": "E4",
+            "description": "Advisory audit clean for high/critical on CURRENT snapshot."
+          }
+        }
+      ],
+      "launchBlocker": {
+        "enabled": false
+      }
+    },
+    {
+      "id": "CTL-SECURITY-003",
+      "version": "0.1.0",
+      "title": "Production transport and security headers",
+      "domain": "SECURITY",
+      "capabilityRefs": [
+        "security.owasp"
+      ],
+      "objective": "Production serves HTTPS only with HSTS, CSP and standard hardening headers.",
+      "applicability": {
+        "projectTypes": [
+          "STATIC_WEBSITE",
+          "SAAS",
+          "AI_SAAS",
+          "ECOMMERCE",
+          "MARKETPLACE",
+          "DEVELOPER_TOOL",
+          "FINTECH_TRADING",
+          "INTERNAL_TOOL"
+        ],
+        "onUnknown": "INCLUDE"
+      },
+      "riskWeight": 3,
+      "requiredPlane": "LIVE",
+      "evidenceRequirements": [
+        {
+          "sourceKinds": [
+            "RUNTIME_PROBE"
+          ],
+          "minStrength": "E4",
+          "description": "HTTPS/header probe of user-confirmed production URLs."
+        },
+        {
+          "sourceKinds": [
+            "CONFIGURATION"
+          ],
+          "minStrength": "E3",
+          "description": "Header config in framework/hosting config (intent only)."
+        }
+      ],
+      "scoringRule": {
+        "ABSENT": "HTTP served or no hardening headers.",
+        "PARTIAL": "HTTPS but CSP/HSTS missing.",
+        "IMPLEMENTED_UNVERIFIED": "Headers configured in code; production not probed.",
+        "IMPLEMENTED_STRONG": "Probe shows headers with weak CSP (unsafe-inline etc).",
+        "VERIFIED": "Probe shows HTTPS redirect, HSTS and restrictive CSP."
+      },
+      "automatedChecks": [
+        "det.live.http_headers"
+      ],
+      "findingTemplates": [
+        {
+          "templateId": "FT-SECURITY-003-B",
+          "whenStatusIn": [
+            "ABSENT"
+          ],
+          "severity": "MEDIUM",
+          "severityByProjectType": {
+            "FINTECH_TRADING": "HIGH",
+            "ECOMMERCE": "HIGH"
+          },
+          "title": "Not implemented: production transport and security headers",
+          "impact": "No implementation was found. If launched without it: Increased XSS/clickjacking/downgrade exposure.",
+          "recommendation": "Implement before launch: Production serves HTTPS only with HSTS, CSP and standard hardening headers.",
+          "verificationRequired": {
+            "method": "LIVE_CHECK",
+            "minStrength": "E4",
+            "description": "Header probe of production after deploy."
+          }
+        },
+        {
+          "templateId": "FT-SECURITY-003-A",
+          "whenStatusIn": [
+            "PARTIAL"
+          ],
+          "severity": "MEDIUM",
+          "severityByProjectType": {
+            "FINTECH_TRADING": "HIGH",
+            "ECOMMERCE": "HIGH"
+          },
+          "title": "Production security headers missing",
+          "impact": "Increased XSS/clickjacking/downgrade exposure.",
+          "recommendation": "Configure HSTS, CSP and hardening headers at the edge.",
+          "verificationRequired": {
+            "method": "LIVE_CHECK",
+            "minStrength": "E4",
+            "description": "Header probe of production after deploy."
+          }
+        }
+      ],
+      "launchBlocker": {
+        "enabled": false
+      }
+    },
+    {
+      "id": "CTL-SECURITY-004",
+      "version": "0.1.0",
+      "title": "AI features resist prompt injection and constrain tool authority",
+      "domain": "SECURITY",
+      "capabilityRefs": [
+        "security.prompt_injection",
+        "ai.guardrails",
+        "ai.human_approval"
+      ],
+      "objective": "Untrusted content reaching models is isolated; model-initiated actions are least-privilege and approval-gated.",
+      "applicability": {
+        "projectTypes": [
+          "AI_SAAS",
+          "AUTOMATION_BUSINESS"
+        ],
+        "onUnknown": "INCLUDE"
+      },
+      "riskWeight": 4,
+      "requiredPlane": "REPOSITORY",
+      "evidenceRequirements": [
+        {
+          "sourceKinds": [
+            "SOURCE_CODE",
+            "TEST_EXECUTION"
+          ],
+          "minStrength": "E3",
+          "description": "Prompt assembly, tool definitions, authorization of tool calls, injection tests."
+        }
+      ],
+      "scoringRule": {
+        "ABSENT": "User/external content concatenated into prompts that can trigger privileged tools without checks.",
+        "PARTIAL": "Some delimiting, but tools run with user-agnostic privileges.",
+        "IMPLEMENTED_UNVERIFIED": "Isolation and tool scoping present; no adversarial tests.",
+        "IMPLEMENTED_STRONG": "Isolation, scoped tools, approval for side effects.",
+        "VERIFIED": "Adversarial injection test suite executed and passing."
+      },
+      "findingTemplates": [
+        {
+          "templateId": "FT-SECURITY-004-B",
+          "whenStatusIn": [
+            "ABSENT"
+          ],
+          "severity": "HIGH",
+          "title": "Not implemented: aI features resist prompt injection and constrain tool authority",
+          "impact": "No implementation was found. If launched without it: Attacker-controlled content can exfiltrate data or trigger actions.",
+          "recommendation": "Implement before launch: Untrusted content reaching models is isolated; model-initiated actions are least-privilege and approval-gated.",
+          "verificationRequired": {
+            "method": "TEST",
+            "minStrength": "E4",
+            "description": "Injection test suite passes on CURRENT snapshot."
+          }
+        },
+        {
+          "templateId": "FT-SECURITY-004-A",
+          "whenStatusIn": [
+            "PARTIAL"
+          ],
+          "severity": "HIGH",
+          "title": "AI feature vulnerable to prompt injection / excessive agency",
+          "impact": "Attacker-controlled content can exfiltrate data or trigger actions.",
+          "recommendation": "Isolate untrusted content, scope tools per user, require approval for side effects, add injection tests.",
+          "verificationRequired": {
+            "method": "TEST",
+            "minStrength": "E4",
+            "description": "Injection test suite passes on CURRENT snapshot."
+          }
+        }
+      ],
+      "launchBlocker": {
+        "enabled": true,
+        "whenStatusIn": [
+          "ABSENT"
+        ],
+        "projectTypes": [
+          "AI_SAAS",
+          "AUTOMATION_BUSINESS"
+        ],
+        "rationale": "Unconstrained model agency over user data or external actions is unsafe to launch."
+      }
+    },
+    {
+      "id": "CTL-SECURITY-005",
+      "version": "0.1.0",
+      "title": "Abuse and rate limiting on public endpoints",
+      "domain": "SECURITY",
+      "capabilityRefs": [
+        "backend.rate_limiting"
+      ],
+      "objective": "Auth, signup, costly (AI/email/SMS) and write endpoints are rate limited.",
+      "applicability": {
+        "projectTypes": [
+          "SAAS",
+          "AI_SAAS",
+          "ECOMMERCE",
+          "MARKETPLACE",
+          "DEVELOPER_TOOL",
+          "FINTECH_TRADING",
+          "MOBILE_APP"
+        ],
+        "onUnknown": "INCLUDE"
+      },
+      "riskWeight": 3,
+      "requiredPlane": "EITHER",
+      "evidenceRequirements": [
+        {
+          "sourceKinds": [
+            "SOURCE_CODE",
+            "CONFIGURATION",
+            "RUNTIME_PROBE"
+          ],
+          "minStrength": "E3",
+          "description": "Limiter middleware/edge rules on the sensitive routes."
+        }
+      ],
+      "scoringRule": {
+        "ABSENT": "No limits on auth or cost-bearing endpoints.",
+        "PARTIAL": "Limits on some sensitive endpoints only.",
+        "IMPLEMENTED_UNVERIFIED": "Limiter present, coverage unclear.",
+        "IMPLEMENTED_STRONG": "All sensitive endpoints limited in code/config.",
+        "VERIFIED": "Live or test evidence of limits enforcing."
+      },
+      "findingTemplates": [
+        {
+          "templateId": "FT-SECURITY-005-B",
+          "whenStatusIn": [
+            "ABSENT"
+          ],
+          "severity": "MEDIUM",
+          "severityByProjectType": {
+            "AI_SAAS": "HIGH"
+          },
+          "title": "Not implemented: abuse and rate limiting on public endpoints",
+          "impact": "No implementation was found. If launched without it: Credential stuffing, spam and runaway provider costs.",
+          "recommendation": "Implement before launch: Auth, signup, costly (AI/email/SMS) and write endpoints are rate limited.",
+          "verificationRequired": {
+            "method": "TEST",
+            "minStrength": "E4",
+            "description": "Test demonstrates limit enforcement."
+          }
+        },
+        {
+          "templateId": "FT-SECURITY-005-A",
+          "whenStatusIn": [
+            "PARTIAL"
+          ],
+          "severity": "MEDIUM",
+          "severityByProjectType": {
+            "AI_SAAS": "HIGH"
+          },
+          "title": "Sensitive endpoints lack rate limiting",
+          "impact": "Credential stuffing, spam and runaway provider costs.",
+          "recommendation": "Add per-identity and per-IP limits to the listed routes.",
+          "verificationRequired": {
+            "method": "TEST",
+            "minStrength": "E4",
+            "description": "Test demonstrates limit enforcement."
+          }
+        }
+      ],
+      "launchBlocker": {
+        "enabled": false
+      }
+    },
+    {
+      "id": "CTL-SECURITY-006",
+      "version": "0.1.0",
+      "title": "Browser extension permissions are least-privilege",
+      "domain": "SECURITY",
+      "capabilityRefs": [
+        "security.threat_model"
+      ],
+      "objective": "Manifest permissions/host permissions are the minimum needed; no remote code execution.",
+      "applicability": {
+        "projectTypes": [
+          "BROWSER_EXTENSION"
+        ],
+        "onUnknown": "EXCLUDE"
+      },
+      "riskWeight": 5,
+      "requiredPlane": "REPOSITORY",
+      "evidenceRequirements": [
+        {
+          "sourceKinds": [
+            "CONFIGURATION",
+            "SOURCE_CODE"
+          ],
+          "minStrength": "E3",
+          "description": "manifest.json permissions vs API usage; remote script loading search."
+        }
+      ],
+      "scoringRule": {
+        "ABSENT": "<all_urls>/broad permissions with remote code loading.",
+        "PARTIAL": "Broad permissions not justified by usage.",
+        "IMPLEMENTED_UNVERIFIED": "Permissions look narrow; usage not cross-checked.",
+        "IMPLEMENTED_STRONG": "Every permission maps to observed API usage.",
+        "VERIFIED": "Store review passed with current permission set."
+      },
+      "findingTemplates": [
+        {
+          "templateId": "FT-SECURITY-006-B",
+          "whenStatusIn": [
+            "ABSENT"
+          ],
+          "severity": "HIGH",
+          "title": "Not implemented: browser extension permissions are least-privilege",
+          "impact": "No implementation was found. If launched without it: Store rejection and large user-data exposure if compromised.",
+          "recommendation": "Implement before launch: Manifest permissions/host permissions are the minimum needed; no remote code execution.",
+          "verificationRequired": {
+            "method": "CODE_REVIEW",
+            "minStrength": "E3",
+            "description": "Manifest vs usage re-check."
+          }
+        },
+        {
+          "templateId": "FT-SECURITY-006-A",
+          "whenStatusIn": [
+            "PARTIAL"
+          ],
+          "severity": "HIGH",
+          "title": "Extension requests excessive permissions",
+          "impact": "Store rejection and large user-data exposure if compromised.",
+          "recommendation": "Reduce permissions to observed usage; remove remote code.",
+          "verificationRequired": {
+            "method": "CODE_REVIEW",
+            "minStrength": "E3",
+            "description": "Manifest vs usage re-check."
+          }
+        }
+      ],
+      "launchBlocker": {
+        "enabled": true,
+        "whenStatusIn": [
+          "ABSENT"
+        ],
+        "projectTypes": [
+          "BROWSER_EXTENSION"
+        ],
+        "rationale": "Remote code plus broad host access violates store policy and user trust."
+      }
+    },
+    {
+      "id": "CTL-SECURITY-007",
+      "version": "0.1.0",
+      "title": "Payment card data scope is minimized",
+      "domain": "SECURITY",
+      "capabilityRefs": [
+        "security.data_classification"
+      ],
+      "objective": "Card data never touches application servers; hosted fields/checkout are used.",
+      "applicability": {
+        "projectTypes": [
+          "ECOMMERCE",
+          "MARKETPLACE",
+          "FINTECH_TRADING"
+        ],
+        "onUnknown": "INCLUDE"
+      },
+      "riskWeight": 5,
+      "requiredPlane": "REPOSITORY",
+      "evidenceRequirements": [
+        {
+          "sourceKinds": [
+            "SOURCE_CODE"
+          ],
+          "minStrength": "E3",
+          "description": "Checkout implementation; search for PAN/CVV fields posted to own backend."
+        }
+      ],
+      "scoringRule": {
+        "ABSENT": "Card fields posted to or stored by own servers.",
+        "PARTIAL": "Hosted checkout used but card data logged or proxied somewhere.",
+        "IMPLEMENTED_UNVERIFIED": "Hosted checkout referenced; flows not traced.",
+        "IMPLEMENTED_STRONG": "All payment flows traced to provider-hosted elements.",
+        "VERIFIED": "Provider dashboard confirms integration type (e.g. Checkout/Elements)."
+      },
+      "findingTemplates": [
+        {
+          "templateId": "FT-SECURITY-007-A",
+          "whenStatusIn": [
+            "ABSENT",
+            "PARTIAL"
+          ],
+          "severity": "CRITICAL",
+          "title": "Application handles raw card data",
+          "impact": "PCI DSS scope explosion and breach liability.",
+          "recommendation": "Move to provider-hosted payment fields; purge stored card data.",
+          "verificationRequired": {
+            "method": "CODE_REVIEW",
+            "minStrength": "E3",
+            "description": "Trace every payment flow in CURRENT snapshot."
+          }
+        }
+      ],
+      "launchBlocker": {
+        "enabled": true,
+        "whenStatusIn": [
+          "ABSENT",
+          "PARTIAL"
+        ],
+        "projectTypes": [
+          "ECOMMERCE",
+          "MARKETPLACE",
+          "FINTECH_TRADING"
+        ],
+        "rationale": "Unscoped card handling is a compliance and breach blocker."
+      }
+    },
+    {
+      "id": "CTL-SECURITY-008",
+      "version": "0.1.0",
+      "title": "Privileged and financial actions are audit-logged",
+      "domain": "SECURITY",
+      "capabilityRefs": [
+        "security.audit_log"
+      ],
+      "objective": "Admin, money-moving and permission-changing actions produce tamper-evident audit records.",
+      "applicability": {
+        "projectTypes": [
+          "FINTECH_TRADING",
+          "MARKETPLACE",
+          "INTERNAL_TOOL",
+          "ECOMMERCE"
+        ],
+        "onUnknown": "INCLUDE"
+      },
+      "riskWeight": 4,
+      "requiredPlane": "EITHER",
+      "evidenceRequirements": [
+        {
+          "sourceKinds": [
+            "SOURCE_CODE",
+            "EXTERNAL_SYSTEM"
+          ],
+          "minStrength": "E3",
+          "description": "Audit log writes at privileged action sites; log store retention."
+        }
+      ],
+      "scoringRule": {
+        "ABSENT": "No audit trail for privileged actions.",
+        "PARTIAL": "Some actions logged to ordinary app logs only.",
+        "IMPLEMENTED_UNVERIFIED": "Audit table exists; coverage untraced.",
+        "IMPLEMENTED_STRONG": "All privileged action sites write audit records.",
+        "VERIFIED": "Live audit records observed with retention configured."
+      },
+      "findingTemplates": [
+        {
+          "templateId": "FT-SECURITY-008-B",
+          "whenStatusIn": [
+            "ABSENT"
+          ],
+          "severity": "HIGH",
+          "title": "Not implemented: privileged and financial actions are audit-logged",
+          "impact": "No implementation was found. If launched without it: Fraud and incidents cannot be investigated or disputed.",
+          "recommendation": "Implement before launch: Admin, money-moving and permission-changing actions produce tamper-evident audit records.",
+          "verificationRequired": {
+            "method": "EXTERNAL_SYSTEM",
+            "minStrength": "E4",
+            "description": "Audit records observed for a test privileged action."
+          }
+        },
+        {
+          "templateId": "FT-SECURITY-008-A",
+          "whenStatusIn": [
+            "PARTIAL"
+          ],
+          "severity": "HIGH",
+          "title": "Privileged actions not audit-logged",
+          "impact": "Fraud and incidents cannot be investigated or disputed.",
+          "recommendation": "Add append-only audit records at each privileged action.",
+          "verificationRequired": {
+            "method": "EXTERNAL_SYSTEM",
+            "minStrength": "E4",
+            "description": "Audit records observed for a test privileged action."
+          }
+        }
+      ],
+      "launchBlocker": {
+        "enabled": false
+      }
+    },
+    {
+      "id": "CTL-PRIVACY_DATA-001",
+      "version": "0.1.0",
+      "title": "Personal data is inventoried with retention and deletion",
+      "domain": "PRIVACY_DATA",
+      "capabilityRefs": [
+        "security.data_classification",
+        "security.retention",
+        "security.deletion"
+      ],
+      "objective": "Personal data fields/stores are known; retention rules and a working user deletion path exist.",
+      "applicability": {
+        "projectTypes": [
+          "SAAS",
+          "AI_SAAS",
+          "MOBILE_APP",
+          "BROWSER_EXTENSION",
+          "ECOMMERCE",
+          "MARKETPLACE",
+          "FINTECH_TRADING",
+          "INTERNAL_TOOL",
+          "AUTOMATION_BUSINESS"
+        ],
+        "onUnknown": "INCLUDE"
+      },
+      "riskWeight": 4,
+      "requiredPlane": "EITHER",
+      "evidenceRequirements": [
+        {
+          "sourceKinds": [
+            "SOURCE_CODE",
+            "CONFIGURATION",
+            "EXTERNAL_SYSTEM"
+          ],
+          "minStrength": "E3",
+          "description": "Schema PII fields, deletion code path, third-party processors receiving PII (incl. AI providers)."
+        }
+      ],
+      "scoringRule": {
+        "ABSENT": "No inventory and no deletion path.",
+        "PARTIAL": "Deletion exists but misses stores/processors.",
+        "IMPLEMENTED_UNVERIFIED": "Inventory + deletion code, untested.",
+        "IMPLEMENTED_STRONG": "Deletion covers all traced stores; retention jobs present.",
+        "VERIFIED": "Deletion executed in test/staging and verified across stores."
+      },
+      "findingTemplates": [
+        {
+          "templateId": "FT-PRIVACY_DATA-001-B",
+          "whenStatusIn": [
+            "ABSENT"
+          ],
+          "severity": "HIGH",
+          "title": "Not implemented: personal data is inventoried with retention and deletion",
+          "impact": "No implementation was found. If launched without it: Regulatory exposure (GDPR/CCPA) and inability to honor deletion requests.",
+          "recommendation": "Implement before launch: Personal data fields/stores are known; retention rules and a working user deletion path exist.",
+          "verificationRequired": {
+            "method": "TEST",
+            "minStrength": "E4",
+            "description": "Deletion test across all stores."
+          }
+        },
+        {
+          "templateId": "FT-PRIVACY_DATA-001-A",
+          "whenStatusIn": [
+            "PARTIAL"
+          ],
+          "severity": "HIGH",
+          "title": "Personal data lacks inventory, retention or deletion",
+          "impact": "Regulatory exposure (GDPR/CCPA) and inability to honor deletion requests.",
+          "recommendation": "Inventory PII, implement complete deletion and retention.",
+          "verificationRequired": {
+            "method": "TEST",
+            "minStrength": "E4",
+            "description": "Deletion test across all stores."
+          }
+        }
+      ],
+      "launchBlocker": {
+        "enabled": false
+      }
+    },
+    {
+      "id": "CTL-AUTH-001",
+      "version": "0.1.0",
+      "title": "Server-side authorization on privileged operations",
+      "domain": "AUTH",
+      "capabilityRefs": [
+        "backend.authorization"
+      ],
+      "objective": "Every privileged route/action checks identity and permission on the server, not only in the UI.",
+      "applicability": {
+        "projectTypes": [
+          "SAAS",
+          "AI_SAAS",
+          "MOBILE_APP",
+          "ECOMMERCE",
+          "MARKETPLACE",
+          "DEVELOPER_TOOL",
+          "FINTECH_TRADING",
+          "INTERNAL_TOOL",
+          "AUTOMATION_BUSINESS"
+        ],
+        "onUnknown": "INCLUDE"
+      },
+      "riskWeight": 5,
+      "requiredPlane": "REPOSITORY",
+      "evidenceRequirements": [
+        {
+          "sourceKinds": [
+            "SOURCE_CODE",
+            "TEST_EXECUTION"
+          ],
+          "minStrength": "E3",
+          "description": "Route inventory with per-route server-side check; authorization tests."
+        }
+      ],
+      "scoringRule": {
+        "ABSENT": "Privileged routes reachable without server checks.",
+        "PARTIAL": "Some privileged routes lack server checks.",
+        "IMPLEMENTED_UNVERIFIED": "Checks claimed/centralized but route coverage not traced.",
+        "IMPLEMENTED_STRONG": "All inventoried privileged routes traced to server checks.",
+        "VERIFIED": "Authorization tests (incl. negative cases) executed and passing."
+      },
+      "findingTemplates": [
+        {
+          "templateId": "FT-AUTH-001-B",
+          "whenStatusIn": [
+            "ABSENT"
+          ],
+          "severity": "HIGH",
+          "severityByProjectType": {
+            "FINTECH_TRADING": "CRITICAL",
+            "MARKETPLACE": "CRITICAL"
+          },
+          "title": "Not implemented: server-side authorization on privileged operations",
+          "impact": "No implementation was found. If launched without it: Users can read or modify data or perform actions they are not entitled to.",
+          "recommendation": "Implement before launch: Every privileged route/action checks identity and permission on the server, not only in the UI.",
+          "verificationRequired": {
+            "method": "TEST",
+            "minStrength": "E4",
+            "description": "Negative authorization tests pass for every listed route."
+          }
+        },
+        {
+          "templateId": "FT-AUTH-001-A",
+          "whenStatusIn": [
+            "PARTIAL"
+          ],
+          "severity": "HIGH",
+          "severityByProjectType": {
+            "FINTECH_TRADING": "CRITICAL",
+            "MARKETPLACE": "CRITICAL"
+          },
+          "title": "Privileged operations missing server-side authorization",
+          "impact": "Users can read or modify data or perform actions they are not entitled to.",
+          "recommendation": "Enforce authorization in server handlers for each listed route and add negative tests.",
+          "verificationRequired": {
+            "method": "TEST",
+            "minStrength": "E4",
+            "description": "Negative authorization tests pass for every listed route."
+          }
+        }
+      ],
+      "launchBlocker": {
+        "enabled": true,
+        "whenStatusIn": [
+          "ABSENT",
+          "PARTIAL"
+        ],
+        "projectTypes": [
+          "SAAS",
+          "AI_SAAS",
+          "ECOMMERCE",
+          "MARKETPLACE",
+          "FINTECH_TRADING",
+          "INTERNAL_TOOL"
+        ],
+        "rationale": "Broken access control exposes user data on day one."
+      }
+    },
+    {
+      "id": "CTL-AUTH-002",
+      "version": "0.1.0",
+      "title": "Authentication and sessions use a vetted implementation",
+      "domain": "AUTH",
+      "capabilityRefs": [
+        "backend.auth"
+      ],
+      "objective": "Auth uses a maintained provider/library with secure session/cookie settings; no home-grown password crypto.",
+      "applicability": {
+        "projectTypes": [
+          "SAAS",
+          "AI_SAAS",
+          "MOBILE_APP",
+          "ECOMMERCE",
+          "MARKETPLACE",
+          "DEVELOPER_TOOL",
+          "FINTECH_TRADING",
+          "INTERNAL_TOOL"
+        ],
+        "onUnknown": "INCLUDE"
+      },
+      "riskWeight": 4,
+      "requiredPlane": "EITHER",
+      "evidenceRequirements": [
+        {
+          "sourceKinds": [
+            "SOURCE_CODE",
+            "CONFIGURATION",
+            "EXTERNAL_SYSTEM"
+          ],
+          "minStrength": "E3",
+          "description": "Auth library/provider integration, cookie flags, provider settings (MFA, redirect allowlist)."
+        }
+      ],
+      "scoringRule": {
+        "ABSENT": "Custom auth with unsafe primitives or no auth where required.",
+        "PARTIAL": "Vetted library with insecure settings (e.g. non-httpOnly session cookie, open redirects).",
+        "IMPLEMENTED_UNVERIFIED": "Vetted library present; settings not inspected.",
+        "IMPLEMENTED_STRONG": "Vetted library with secure settings in code/config.",
+        "VERIFIED": "Provider settings confirmed live (redirect allowlist, MFA policy)."
+      },
+      "findingTemplates": [
+        {
+          "templateId": "FT-AUTH-002-B",
+          "whenStatusIn": [
+            "ABSENT"
+          ],
+          "severity": "HIGH",
+          "title": "Not implemented: authentication and sessions use a vetted implementation",
+          "impact": "No implementation was found. If launched without it: Account takeover risk.",
+          "recommendation": "Implement before launch: Auth uses a maintained provider/library with secure session/cookie settings; no home-grown password crypto.",
+          "verificationRequired": {
+            "method": "EXTERNAL_SYSTEM",
+            "minStrength": "E4",
+            "description": "Provider/admin settings and cookie flags observed live."
+          }
+        },
+        {
+          "templateId": "FT-AUTH-002-A",
+          "whenStatusIn": [
+            "PARTIAL"
+          ],
+          "severity": "HIGH",
+          "title": "Authentication or session handling is unsafe",
+          "impact": "Account takeover risk.",
+          "recommendation": "Adopt vetted provider defaults and fix listed settings.",
+          "verificationRequired": {
+            "method": "EXTERNAL_SYSTEM",
+            "minStrength": "E4",
+            "description": "Provider/admin settings and cookie flags observed live."
+          }
+        }
+      ],
+      "launchBlocker": {
+        "enabled": false
+      }
+    },
+    {
+      "id": "CTL-AUTH-003",
+      "version": "0.1.0",
+      "title": "Tenant data isolation",
+      "domain": "AUTH",
+      "capabilityRefs": [
+        "security.tenant_isolation",
+        "backend.multitenancy"
+      ],
+      "objective": "Queries and storage access are scoped to the caller's tenant/user at the data layer.",
+      "applicability": {
+        "projectTypes": [
+          "SAAS",
+          "AI_SAAS",
+          "MARKETPLACE",
+          "FINTECH_TRADING"
+        ],
+        "onUnknown": "INCLUDE"
+      },
+      "riskWeight": 5,
+      "requiredPlane": "EITHER",
+      "evidenceRequirements": [
+        {
+          "sourceKinds": [
+            "SOURCE_CODE",
+            "EXTERNAL_SYSTEM",
+            "TEST_EXECUTION"
+          ],
+          "minStrength": "E3",
+          "description": "Query scoping, RLS policies, cross-tenant tests."
+        }
+      ],
+      "scoringRule": {
+        "ABSENT": "Tenant id taken from client input or queries unscoped.",
+        "PARTIAL": "Scoped in most queries; gaps found.",
+        "IMPLEMENTED_UNVERIFIED": "Scoping pattern present; not traced everywhere.",
+        "IMPLEMENTED_STRONG": "All data access traced to scoped queries or RLS.",
+        "VERIFIED": "Cross-tenant access tests pass or live RLS policies confirmed on every table."
+      },
+      "findingTemplates": [
+        {
+          "templateId": "FT-AUTH-003-B",
+          "whenStatusIn": [
+            "ABSENT"
+          ],
+          "severity": "CRITICAL",
+          "title": "Not implemented: tenant data isolation",
+          "impact": "No implementation was found. If launched without it: One customer can access another customer's data.",
+          "recommendation": "Implement before launch: Queries and storage access are scoped to the caller's tenant/user at the data layer.",
+          "verificationRequired": {
+            "method": "TEST",
+            "minStrength": "E4",
+            "description": "Cross-tenant tests pass on CURRENT snapshot."
+          }
+        },
+        {
+          "templateId": "FT-AUTH-003-A",
+          "whenStatusIn": [
+            "PARTIAL"
+          ],
+          "severity": "CRITICAL",
+          "title": "Cross-tenant data access possible",
+          "impact": "One customer can access another customer's data.",
+          "recommendation": "Enforce tenant scoping at the data layer (RLS or mandatory scoped repository).",
+          "verificationRequired": {
+            "method": "TEST",
+            "minStrength": "E4",
+            "description": "Cross-tenant tests pass on CURRENT snapshot."
+          }
+        }
+      ],
+      "launchBlocker": {
+        "enabled": true,
+        "whenStatusIn": [
+          "ABSENT",
+          "PARTIAL"
+        ],
+        "projectTypes": [
+          "SAAS",
+          "AI_SAAS",
+          "MARKETPLACE",
+          "FINTECH_TRADING"
+        ],
+        "rationale": "Cross-tenant exposure is a breach."
+      }
+    },
+    {
+      "id": "CTL-DATABASE-001",
+      "version": "0.1.0",
+      "title": "Schema changes are versioned migrations",
+      "domain": "DATABASE",
+      "capabilityRefs": [
+        "backend.migrations",
+        "backend.database"
+      ],
+      "objective": "Database schema is reproducible from versioned migrations in the repository.",
+      "applicability": {
+        "projectTypes": [
+          "SAAS",
+          "AI_SAAS",
+          "MOBILE_APP",
+          "ECOMMERCE",
+          "MARKETPLACE",
+          "DEVELOPER_TOOL",
+          "FINTECH_TRADING",
+          "INTERNAL_TOOL",
+          "AUTOMATION_BUSINESS"
+        ],
+        "onUnknown": "EXCLUDE"
+      },
+      "riskWeight": 4,
+      "requiredPlane": "EITHER",
+      "evidenceRequirements": [
+        {
+          "sourceKinds": [
+            "SOURCE_CODE",
+            "COMMAND_OUTPUT",
+            "EXTERNAL_SYSTEM"
+          ],
+          "minStrength": "E3",
+          "description": "Migration directory; migration apply on empty DB in sandbox; live migration table vs repo."
+        }
+      ],
+      "scoringRule": {
+        "ABSENT": "Schema changed manually; no migrations.",
+        "PARTIAL": "Migrations exist but schema drifted or out of order.",
+        "IMPLEMENTED_UNVERIFIED": "Migrations present, not applied in sandbox.",
+        "IMPLEMENTED_STRONG": "Migrations apply cleanly to empty database in sandbox.",
+        "VERIFIED": "Live migration history matches repository."
+      },
+      "findingTemplates": [
+        {
+          "templateId": "FT-DATABASE-001-B",
+          "whenStatusIn": [
+            "ABSENT"
+          ],
+          "severity": "HIGH",
+          "title": "Not implemented: schema changes are versioned migrations",
+          "impact": "No implementation was found. If launched without it: Environments drift; restores and new environments fail.",
+          "recommendation": "Implement before launch: Database schema is reproducible from versioned migrations in the repository.",
+          "verificationRequired": {
+            "method": "EXTERNAL_SYSTEM",
+            "minStrength": "E4",
+            "description": "Live migration table matches repository."
+          }
+        },
+        {
+          "templateId": "FT-DATABASE-001-A",
+          "whenStatusIn": [
+            "PARTIAL"
+          ],
+          "severity": "HIGH",
+          "title": "Database schema not reproducible from migrations",
+          "impact": "Environments drift; restores and new environments fail.",
+          "recommendation": "Baseline the live schema into migrations and enforce migration-only changes.",
+          "verificationRequired": {
+            "method": "EXTERNAL_SYSTEM",
+            "minStrength": "E4",
+            "description": "Live migration table matches repository."
+          }
+        }
+      ],
+      "launchBlocker": {
+        "enabled": false
+      }
+    },
+    {
+      "id": "CTL-DATABASE-002",
+      "version": "0.1.0",
+      "title": "Live database access policies are enforced",
+      "domain": "DATABASE",
+      "capabilityRefs": [
+        "backend.database",
+        "security.tenant_isolation"
+      ],
+      "objective": "Directly reachable databases (e.g. Supabase/Firebase) have row/document access rules on every exposed table/collection.",
+      "applicability": {
+        "projectTypes": [
+          "SAAS",
+          "AI_SAAS",
+          "MOBILE_APP",
+          "ECOMMERCE",
+          "MARKETPLACE",
+          "FINTECH_TRADING",
+          "INTERNAL_TOOL"
+        ],
+        "onUnknown": "INCLUDE"
+      },
+      "riskWeight": 5,
+      "requiredPlane": "LIVE",
+      "evidenceRequirements": [
+        {
+          "sourceKinds": [
+            "EXTERNAL_SYSTEM"
+          ],
+          "minStrength": "E4",
+          "description": "Read-only metadata connector: policy enabled per table. Never row data."
+        },
+        {
+          "sourceKinds": [
+            "SOURCE_CODE"
+          ],
+          "minStrength": "E3",
+          "description": "Policy definitions in migrations (intent)."
+        }
+      ],
+      "scoringRule": {
+        "ABSENT": "Client-reachable tables without policies.",
+        "PARTIAL": "Policies on some exposed tables.",
+        "IMPLEMENTED_UNVERIFIED": "Policies defined in migrations; live state unknown.",
+        "IMPLEMENTED_STRONG": "Live policies on all exposed tables; policy logic not tested.",
+        "VERIFIED": "Live policies on all exposed tables and policy tests pass."
+      },
+      "findingTemplates": [
+        {
+          "templateId": "FT-DATABASE-002-B",
+          "whenStatusIn": [
+            "ABSENT"
+          ],
+          "severity": "CRITICAL",
+          "title": "Not implemented: live database access policies are enforced",
+          "impact": "No implementation was found. If launched without it: Anyone with the public key can read/write data.",
+          "recommendation": "Implement before launch: Directly reachable databases (e.g. Supabase/Firebase) have row/document access rules on every exposed table/collection.",
+          "verificationRequired": {
+            "method": "EXTERNAL_SYSTEM",
+            "minStrength": "E4",
+            "description": "Connector confirms policies on every exposed table."
+          }
+        },
+        {
+          "templateId": "FT-DATABASE-002-A",
+          "whenStatusIn": [
+            "PARTIAL"
+          ],
+          "severity": "CRITICAL",
+          "title": "Client-reachable database tables lack access policies",
+          "impact": "Anyone with the public key can read/write data.",
+          "recommendation": "Enable and write policies for every exposed table.",
+          "verificationRequired": {
+            "method": "EXTERNAL_SYSTEM",
+            "minStrength": "E4",
+            "description": "Connector confirms policies on every exposed table."
+          }
+        }
+      ],
+      "launchBlocker": {
+        "enabled": true,
+        "whenStatusIn": [
+          "ABSENT",
+          "PARTIAL"
+        ],
+        "projectTypes": [
+          "ALL"
+        ],
+        "rationale": "Open database is an immediate breach."
+      }
+    },
+    {
+      "id": "CTL-TESTING_QA-001",
+      "version": "0.1.0",
+      "title": "Automated tests exist and pass",
+      "domain": "TESTING_QA",
+      "capabilityRefs": [
+        "quality.unit_testing",
+        "quality.integration_testing"
+      ],
+      "objective": "Core business logic has automated tests that pass on the snapshot.",
+      "applicability": {
+        "projectTypes": [
+          "ALL"
+        ],
+        "onUnknown": "INCLUDE"
+      },
+      "riskWeight": 4,
+      "requiredPlane": "REPOSITORY",
+      "evidenceRequirements": [
+        {
+          "sourceKinds": [
+            "TEST_EXECUTION"
+          ],
+          "minStrength": "E4",
+          "description": "Sandboxed test run; test-to-module mapping."
+        }
+      ],
+      "scoringRule": {
+        "ABSENT": "No tests.",
+        "PARTIAL": "Tests exist but fail, or cover only trivial code.",
+        "IMPLEMENTED_UNVERIFIED": "Tests present, not executed.",
+        "IMPLEMENTED_STRONG": "Tests pass; critical modules partly uncovered.",
+        "VERIFIED": "Tests pass and cover the identified critical modules."
+      },
+      "automatedChecks": [
+        "det.tests.frameworks"
+      ],
+      "findingTemplates": [
+        {
+          "templateId": "FT-TESTING_QA-001-B",
+          "whenStatusIn": [
+            "ABSENT"
+          ],
+          "severity": "HIGH",
+          "severityByProjectType": {
+            "STATIC_WEBSITE": "LOW"
+          },
+          "title": "Not implemented: automated tests exist and pass",
+          "impact": "No implementation was found. If launched without it: Regressions ship undetected; remediation cannot be verified.",
+          "recommendation": "Implement before launch: Core business logic has automated tests that pass on the snapshot.",
+          "verificationRequired": {
+            "method": "TEST",
+            "minStrength": "E4",
+            "description": "Test run passes on CURRENT snapshot."
+          }
+        },
+        {
+          "templateId": "FT-TESTING_QA-001-A",
+          "whenStatusIn": [
+            "PARTIAL"
+          ],
+          "severity": "HIGH",
+          "severityByProjectType": {
+            "STATIC_WEBSITE": "LOW"
+          },
+          "title": "Core logic lacks passing automated tests",
+          "impact": "Regressions ship undetected; remediation cannot be verified.",
+          "recommendation": "Add tests for the listed critical modules before remediation changes.",
+          "verificationRequired": {
+            "method": "TEST",
+            "minStrength": "E4",
+            "description": "Test run passes on CURRENT snapshot."
+          }
+        }
+      ],
+      "launchBlocker": {
+        "enabled": false
+      }
+    },
+    {
+      "id": "CTL-TESTING_QA-002",
+      "version": "0.1.0",
+      "title": "Critical user journeys have end-to-end coverage",
+      "domain": "TESTING_QA",
+      "capabilityRefs": [
+        "quality.e2e_testing"
+      ],
+      "objective": "Signup/login, core value action and payment journeys are exercised end to end.",
+      "applicability": {
+        "projectTypes": [
+          "SAAS",
+          "AI_SAAS",
+          "MOBILE_APP",
+          "ECOMMERCE",
+          "MARKETPLACE",
+          "FINTECH_TRADING"
+        ],
+        "onUnknown": "INCLUDE"
+      },
+      "riskWeight": 3,
+      "requiredPlane": "REPOSITORY",
+      "evidenceRequirements": [
+        {
+          "sourceKinds": [
+            "TEST_EXECUTION",
+            "SOURCE_CODE"
+          ],
+          "minStrength": "E3",
+          "description": "E2E specs mapped to journeys; execution results."
+        }
+      ],
+      "scoringRule": {
+        "ABSENT": "No E2E tests.",
+        "PARTIAL": "Some journeys covered.",
+        "IMPLEMENTED_UNVERIFIED": "Journeys covered, not executed.",
+        "IMPLEMENTED_STRONG": "Journeys covered and passing locally.",
+        "VERIFIED": "Journeys pass in CI against a deployed environment."
+      },
+      "findingTemplates": [
+        {
+          "templateId": "FT-TESTING_QA-002-B",
+          "whenStatusIn": [
+            "ABSENT"
+          ],
+          "severity": "MEDIUM",
+          "title": "Not implemented: critical user journeys have end-to-end coverage",
+          "impact": "No implementation was found. If launched without it: Revenue-critical flows can break silently.",
+          "recommendation": "Implement before launch: Signup/login, core value action and payment journeys are exercised end to end.",
+          "verificationRequired": {
+            "method": "TEST",
+            "minStrength": "E4",
+            "description": "E2E run passes."
+          }
+        },
+        {
+          "templateId": "FT-TESTING_QA-002-A",
+          "whenStatusIn": [
+            "PARTIAL"
+          ],
+          "severity": "MEDIUM",
+          "title": "Critical journeys lack end-to-end tests",
+          "impact": "Revenue-critical flows can break silently.",
+          "recommendation": "Add E2E coverage for listed journeys.",
+          "verificationRequired": {
+            "method": "TEST",
+            "minStrength": "E4",
+            "description": "E2E run passes."
+          }
+        }
+      ],
+      "launchBlocker": {
+        "enabled": false
+      }
+    },
+    {
+      "id": "CTL-ACCESSIBILITY-001",
+      "version": "0.1.0",
+      "title": "Core flows meet WCAG 2.2 AA basics",
+      "domain": "ACCESSIBILITY",
+      "capabilityRefs": [
+        "design.accessibility",
+        "quality.accessibility_testing"
+      ],
+      "objective": "Core flows are keyboard operable, labelled, sufficiently contrasted and pass automated a11y checks.",
+      "applicability": {
+        "projectTypes": [
+          "STATIC_WEBSITE",
+          "SAAS",
+          "AI_SAAS",
+          "MOBILE_APP",
+          "BROWSER_EXTENSION",
+          "ECOMMERCE",
+          "MARKETPLACE",
+          "DEVELOPER_TOOL",
+          "FINTECH_TRADING",
+          "INTERNAL_TOOL"
+        ],
+        "onUnknown": "INCLUDE"
+      },
+      "riskWeight": 2,
+      "requiredPlane": "EITHER",
+      "evidenceRequirements": [
+        {
+          "sourceKinds": [
+            "TEST_EXECUTION",
+            "RUNTIME_PROBE",
+            "SOURCE_CODE"
+          ],
+          "minStrength": "E3",
+          "description": "axe/lighthouse run on core pages; semantic markup review."
+        }
+      ],
+      "scoringRule": {
+        "ABSENT": "Core flows unusable by keyboard/screen reader.",
+        "PARTIAL": "Serious violations on core flows.",
+        "IMPLEMENTED_UNVERIFIED": "Semantic components used; not tested.",
+        "IMPLEMENTED_STRONG": "Automated checks pass; manual checks not done.",
+        "VERIFIED": "Automated and manual keyboard/screen-reader checks pass."
+      },
+      "findingTemplates": [
+        {
+          "templateId": "FT-ACCESSIBILITY-001-B",
+          "whenStatusIn": [
+            "ABSENT"
+          ],
+          "severity": "MEDIUM",
+          "title": "Not implemented: core flows meet WCAG 2.2 AA basics",
+          "impact": "No implementation was found. If launched without it: Excludes users; legal exposure in some markets.",
+          "recommendation": "Implement before launch: Core flows are keyboard operable, labelled, sufficiently contrasted and pass automated a11y checks.",
+          "verificationRequired": {
+            "method": "TEST",
+            "minStrength": "E4",
+            "description": "Automated a11y run clean on core pages."
+          }
+        },
+        {
+          "templateId": "FT-ACCESSIBILITY-001-A",
+          "whenStatusIn": [
+            "PARTIAL"
+          ],
+          "severity": "MEDIUM",
+          "title": "Accessibility violations on core flows",
+          "impact": "Excludes users; legal exposure in some markets.",
+          "recommendation": "Fix listed violations and add automated a11y checks.",
+          "verificationRequired": {
+            "method": "TEST",
+            "minStrength": "E4",
+            "description": "Automated a11y run clean on core pages."
+          }
+        }
+      ],
+      "launchBlocker": {
+        "enabled": false
+      }
+    },
+    {
+      "id": "CTL-DESIGN_UX-001",
+      "version": "0.1.0",
+      "title": "Core flows are responsive and complete",
+      "domain": "DESIGN_UX",
+      "capabilityRefs": [
+        "design.responsive_design",
+        "design.design_qa"
+      ],
+      "objective": "Core flows work at mobile and desktop sizes with loading, empty and error states.",
+      "applicability": {
+        "projectTypes": [
+          "STATIC_WEBSITE",
+          "SAAS",
+          "AI_SAAS",
+          "MOBILE_APP",
+          "BROWSER_EXTENSION",
+          "ECOMMERCE",
+          "MARKETPLACE",
+          "DEVELOPER_TOOL",
+          "FINTECH_TRADING",
+          "INTERNAL_TOOL"
+        ],
+        "onUnknown": "INCLUDE"
+      },
+      "riskWeight": 2,
+      "requiredPlane": "EITHER",
+      "evidenceRequirements": [
+        {
+          "sourceKinds": [
+            "RUNTIME_PROBE",
+            "SOURCE_CODE",
+            "USER_ATTESTATION_ARTIFACT"
+          ],
+          "minStrength": "E2",
+          "description": "Screenshots at breakpoints; state handling in components."
+        }
+      ],
+      "scoringRule": {
+        "ABSENT": "Core flows broken on common viewports.",
+        "PARTIAL": "Missing error/empty states or broken breakpoints.",
+        "IMPLEMENTED_UNVERIFIED": "States implemented in code; not rendered.",
+        "IMPLEMENTED_STRONG": "Rendered checks at breakpoints pass.",
+        "VERIFIED": "Rendered checks plus usability review of core flows."
+      },
+      "findingTemplates": [
+        {
+          "templateId": "FT-DESIGN_UX-001-B",
+          "whenStatusIn": [
+            "ABSENT"
+          ],
+          "severity": "MEDIUM",
+          "title": "Not implemented: core flows are responsive and complete",
+          "impact": "No implementation was found. If launched without it: Activation and conversion loss.",
+          "recommendation": "Implement before launch: Core flows work at mobile and desktop sizes with loading, empty and error states.",
+          "verificationRequired": {
+            "method": "LIVE_CHECK",
+            "minStrength": "E4",
+            "description": "Rendered screenshots at breakpoints."
+          }
+        },
+        {
+          "templateId": "FT-DESIGN_UX-001-A",
+          "whenStatusIn": [
+            "PARTIAL"
+          ],
+          "severity": "MEDIUM",
+          "title": "Core flows incomplete or broken on common viewports",
+          "impact": "Activation and conversion loss.",
+          "recommendation": "Fix listed viewport/state gaps.",
+          "verificationRequired": {
+            "method": "LIVE_CHECK",
+            "minStrength": "E4",
+            "description": "Rendered screenshots at breakpoints."
+          }
+        }
+      ],
+      "launchBlocker": {
+        "enabled": false
+      }
+    },
+    {
+      "id": "CTL-PERFORMANCE-001",
+      "version": "0.1.0",
+      "title": "Production performance meets budget",
+      "domain": "PERFORMANCE",
+      "capabilityRefs": [
+        "quality.load_testing",
+        "infra.cdn"
+      ],
+      "objective": "Core pages/APIs meet Core Web Vitals or latency budgets in production.",
+      "applicability": {
+        "projectTypes": [
+          "STATIC_WEBSITE",
+          "SAAS",
+          "AI_SAAS",
+          "ECOMMERCE",
+          "MARKETPLACE",
+          "DEVELOPER_TOOL",
+          "FINTECH_TRADING"
+        ],
+        "onUnknown": "INCLUDE"
+      },
+      "riskWeight": 2,
+      "requiredPlane": "LIVE",
+      "evidenceRequirements": [
+        {
+          "sourceKinds": [
+            "RUNTIME_PROBE",
+            "EXTERNAL_SYSTEM"
+          ],
+          "minStrength": "E4",
+          "description": "Lab/field vitals on confirmed production URLs; API latency metrics."
+        }
+      ],
+      "scoringRule": {
+        "ABSENT": "Core pages fail vitals badly (poor on all).",
+        "PARTIAL": "Some core pages poor.",
+        "IMPLEMENTED_UNVERIFIED": "Optimizations in code; production not measured.",
+        "IMPLEMENTED_STRONG": "Lab measurements within budget.",
+        "VERIFIED": "Field data within budget."
+      },
+      "findingTemplates": [
+        {
+          "templateId": "FT-PERFORMANCE-001-B",
+          "whenStatusIn": [
+            "ABSENT"
+          ],
+          "severity": "MEDIUM",
+          "title": "Not implemented: production performance meets budget",
+          "impact": "No implementation was found. If launched without it: Conversion and SEO loss.",
+          "recommendation": "Implement before launch: Core pages/APIs meet Core Web Vitals or latency budgets in production.",
+          "verificationRequired": {
+            "method": "LIVE_CHECK",
+            "minStrength": "E4",
+            "description": "Re-measure production."
+          }
+        },
+        {
+          "templateId": "FT-PERFORMANCE-001-A",
+          "whenStatusIn": [
+            "PARTIAL"
+          ],
+          "severity": "MEDIUM",
+          "title": "Production performance below budget",
+          "impact": "Conversion and SEO loss.",
+          "recommendation": "Address listed bottlenecks.",
+          "verificationRequired": {
+            "method": "LIVE_CHECK",
+            "minStrength": "E4",
+            "description": "Re-measure production."
+          }
+        }
+      ],
+      "launchBlocker": {
+        "enabled": false
+      }
+    },
+    {
+      "id": "CTL-AI_EFFICIENCY-001",
+      "version": "0.1.0",
+      "title": "AI usage has routing, budgets and cost visibility",
+      "domain": "AI_EFFICIENCY",
+      "capabilityRefs": [
+        "ai.model_routing",
+        "ai.token_harness",
+        "infra.cost_monitoring"
+      ],
+      "objective": "Model choice fits task, context is bounded, retries are capped, and per-feature cost is observable.",
+      "applicability": {
+        "projectTypes": [
+          "AI_SAAS",
+          "AUTOMATION_BUSINESS"
+        ],
+        "onUnknown": "INCLUDE"
+      },
+      "riskWeight": 3,
+      "requiredPlane": "EITHER",
+      "evidenceRequirements": [
+        {
+          "sourceKinds": [
+            "SOURCE_CODE",
+            "EXTERNAL_SYSTEM"
+          ],
+          "minStrength": "E3",
+          "description": "Provider call sites, model selection, max tokens, retry policy, caching; provider usage dashboards."
+        }
+      ],
+      "scoringRule": {
+        "ABSENT": "Premium model everywhere, unbounded context/retries, no cost tracking.",
+        "PARTIAL": "Some bounds; no per-feature cost attribution.",
+        "IMPLEMENTED_UNVERIFIED": "Routing and budgets in code; spend not observed.",
+        "IMPLEMENTED_STRONG": "Routing, caps, caching and cost logging in code.",
+        "VERIFIED": "Provider usage confirms per-feature cost within budget."
+      },
+      "findingTemplates": [
+        {
+          "templateId": "FT-AI_EFFICIENCY-001-B",
+          "whenStatusIn": [
+            "ABSENT"
+          ],
+          "severity": "MEDIUM",
+          "severityByProjectType": {
+            "AI_SAAS": "HIGH"
+          },
+          "title": "Not implemented: aI usage has routing, budgets and cost visibility",
+          "impact": "No implementation was found. If launched without it: Margin erosion and abuse-driven cost spikes.",
+          "recommendation": "Implement before launch: Model choice fits task, context is bounded, retries are capped, and per-feature cost is observable.",
+          "verificationRequired": {
+            "method": "EXTERNAL_SYSTEM",
+            "minStrength": "E4",
+            "description": "Provider usage shows attribution and caps."
+          }
+        },
+        {
+          "templateId": "FT-AI_EFFICIENCY-001-A",
+          "whenStatusIn": [
+            "PARTIAL"
+          ],
+          "severity": "MEDIUM",
+          "severityByProjectType": {
+            "AI_SAAS": "HIGH"
+          },
+          "title": "AI spend is unbounded or unobservable",
+          "impact": "Margin erosion and abuse-driven cost spikes.",
+          "recommendation": "Add routing, token/retry caps, caching and per-feature cost logging.",
+          "verificationRequired": {
+            "method": "EXTERNAL_SYSTEM",
+            "minStrength": "E4",
+            "description": "Provider usage shows attribution and caps."
+          }
+        }
+      ],
+      "launchBlocker": {
+        "enabled": false
+      }
+    },
+    {
+      "id": "CTL-AI_EFFICIENCY-002",
+      "version": "0.1.0",
+      "title": "AI outputs have evaluations",
+      "domain": "AI_EFFICIENCY",
+      "capabilityRefs": [
+        "ai.evals",
+        "ai.structured_output"
+      ],
+      "objective": "Quality of AI features is measured by repeatable evals before prompt/model changes ship.",
+      "applicability": {
+        "projectTypes": [
+          "AI_SAAS"
+        ],
+        "onUnknown": "INCLUDE"
+      },
+      "riskWeight": 3,
+      "requiredPlane": "REPOSITORY",
+      "evidenceRequirements": [
+        {
+          "sourceKinds": [
+            "TEST_EXECUTION",
+            "SOURCE_CODE"
+          ],
+          "minStrength": "E3",
+          "description": "Eval datasets/harness and run results."
+        }
+      ],
+      "scoringRule": {
+        "ABSENT": "No evals.",
+        "PARTIAL": "Ad-hoc examples only.",
+        "IMPLEMENTED_UNVERIFIED": "Eval harness exists; not run.",
+        "IMPLEMENTED_STRONG": "Evals run for main features.",
+        "VERIFIED": "Evals gate changes in CI."
+      },
+      "findingTemplates": [
+        {
+          "templateId": "FT-AI_EFFICIENCY-002-B",
+          "whenStatusIn": [
+            "ABSENT"
+          ],
+          "severity": "MEDIUM",
+          "title": "Not implemented: aI outputs have evaluations",
+          "impact": "No implementation was found. If launched without it: Model/prompt changes can silently degrade outcomes.",
+          "recommendation": "Implement before launch: Quality of AI features is measured by repeatable evals before prompt/model changes ship.",
+          "verificationRequired": {
+            "method": "TEST",
+            "minStrength": "E4",
+            "description": "Eval run results recorded."
+          }
+        },
+        {
+          "templateId": "FT-AI_EFFICIENCY-002-A",
+          "whenStatusIn": [
+            "PARTIAL"
+          ],
+          "severity": "MEDIUM",
+          "title": "AI features lack evaluations",
+          "impact": "Model/prompt changes can silently degrade outcomes.",
+          "recommendation": "Create eval sets for core AI features and run them on change.",
+          "verificationRequired": {
+            "method": "TEST",
+            "minStrength": "E4",
+            "description": "Eval run results recorded."
+          }
+        }
+      ],
+      "launchBlocker": {
+        "enabled": false
+      }
+    },
+    {
+      "id": "CTL-OBSERVABILITY-001",
+      "version": "0.1.0",
+      "title": "Production errors are captured and alerted",
+      "domain": "OBSERVABILITY",
+      "capabilityRefs": [
+        "infra.observability",
+        "infra.alerting",
+        "infra.logging"
+      ],
+      "objective": "Unhandled errors and failed jobs in production reach a tracked system that alerts a human.",
+      "applicability": {
+        "projectTypes": [
+          "SAAS",
+          "AI_SAAS",
+          "MOBILE_APP",
+          "BROWSER_EXTENSION",
+          "ECOMMERCE",
+          "MARKETPLACE",
+          "DEVELOPER_TOOL",
+          "FINTECH_TRADING",
+          "INTERNAL_TOOL",
+          "AUTOMATION_BUSINESS"
+        ],
+        "onUnknown": "INCLUDE"
+      },
+      "riskWeight": 4,
+      "requiredPlane": "LIVE",
+      "evidenceRequirements": [
+        {
+          "sourceKinds": [
+            "EXTERNAL_SYSTEM"
+          ],
+          "minStrength": "E4",
+          "description": "Error tracker receiving production events; alert rules."
+        },
+        {
+          "sourceKinds": [
+            "SOURCE_CODE",
+            "CONFIGURATION"
+          ],
+          "minStrength": "E3",
+          "description": "SDK initialization (intent)."
+        }
+      ],
+      "scoringRule": {
+        "ABSENT": "No error tracking.",
+        "PARTIAL": "Console logging only or SDK without DSN in production.",
+        "IMPLEMENTED_UNVERIFIED": "SDK configured; production ingestion unknown.",
+        "IMPLEMENTED_STRONG": "Production events observed; no alert routing.",
+        "VERIFIED": "Production events observed and alert rules route to a person."
+      },
+      "findingTemplates": [
+        {
+          "templateId": "FT-OBSERVABILITY-001-B",
+          "whenStatusIn": [
+            "ABSENT"
+          ],
+          "severity": "HIGH",
+          "title": "Not implemented: production errors are captured and alerted",
+          "impact": "No implementation was found. If launched without it: Outages, failed payments and job failures go unnoticed.",
+          "recommendation": "Implement before launch: Unhandled errors and failed jobs in production reach a tracked system that alerts a human.",
+          "verificationRequired": {
+            "method": "EXTERNAL_SYSTEM",
+            "minStrength": "E4",
+            "description": "Test error appears and alerts."
+          }
+        },
+        {
+          "templateId": "FT-OBSERVABILITY-001-A",
+          "whenStatusIn": [
+            "PARTIAL",
+            "IMPLEMENTED_UNVERIFIED"
+          ],
+          "severity": "HIGH",
+          "title": "Production failures are not observed",
+          "impact": "Outages, failed payments and job failures go unnoticed.",
+          "recommendation": "Connect error tracking with alert routing in production.",
+          "verificationRequired": {
+            "method": "EXTERNAL_SYSTEM",
+            "minStrength": "E4",
+            "description": "Test error appears and alerts."
+          }
+        }
+      ],
+      "launchBlocker": {
+        "enabled": false
+      }
+    },
+    {
+      "id": "CTL-DEPLOYMENT-001",
+      "version": "0.1.0",
+      "title": "CI builds and tests the default branch with gates",
+      "domain": "DEPLOYMENT",
+      "capabilityRefs": [
+        "infra.ci_cd",
+        "quality.release_gates"
+      ],
+      "objective": "Every change to the deploy branch is built and tested automatically; failing checks block deploy.",
+      "applicability": {
+        "projectTypes": [
+          "ALL"
+        ],
+        "onUnknown": "INCLUDE"
+      },
+      "riskWeight": 3,
+      "requiredPlane": "EITHER",
+      "evidenceRequirements": [
+        {
+          "sourceKinds": [
+            "CONFIGURATION",
+            "EXTERNAL_SYSTEM"
+          ],
+          "minStrength": "E3",
+          "description": "Workflow files (intent); CI run history and branch protection (live)."
+        }
+      ],
+      "scoringRule": {
+        "ABSENT": "No CI.",
+        "PARTIAL": "CI exists but does not run tests or is failing/ignored.",
+        "IMPLEMENTED_UNVERIFIED": "CI config runs build+tests; runs not observed.",
+        "IMPLEMENTED_STRONG": "Recent CI runs green on default branch.",
+        "VERIFIED": "Green runs plus required checks/branch protection enforced."
+      },
+      "automatedChecks": [
+        "det.ci.workflows"
+      ],
+      "findingTemplates": [
+        {
+          "templateId": "FT-DEPLOYMENT-001-B",
+          "whenStatusIn": [
+            "ABSENT"
+          ],
+          "severity": "MEDIUM",
+          "title": "Not implemented: cI builds and tests the default branch with gates",
+          "impact": "No implementation was found. If launched without it: Broken builds and regressions reach production.",
+          "recommendation": "Implement before launch: Every change to the deploy branch is built and tested automatically; failing checks block deploy.",
+          "verificationRequired": {
+            "method": "EXTERNAL_SYSTEM",
+            "minStrength": "E4",
+            "description": "CI history + branch protection observed."
+          }
+        },
+        {
+          "templateId": "FT-DEPLOYMENT-001-A",
+          "whenStatusIn": [
+            "PARTIAL"
+          ],
+          "severity": "MEDIUM",
+          "title": "No enforced CI gate before deploy",
+          "impact": "Broken builds and regressions reach production.",
+          "recommendation": "Add CI build/test and require it before deploy.",
+          "verificationRequired": {
+            "method": "EXTERNAL_SYSTEM",
+            "minStrength": "E4",
+            "description": "CI history + branch protection observed."
+          }
+        }
+      ],
+      "launchBlocker": {
+        "enabled": false
+      }
+    },
+    {
+      "id": "CTL-DEPLOYMENT-002",
+      "version": "0.1.0",
+      "title": "Deployments can be rolled back",
+      "domain": "DEPLOYMENT",
+      "capabilityRefs": [
+        "quality.rollback",
+        "infra.deployment"
+      ],
+      "objective": "A known, tested path restores the previous production version (including schema compatibility).",
+      "applicability": {
+        "projectTypes": [
+          "ALL"
+        ],
+        "onUnknown": "INCLUDE"
+      },
+      "riskWeight": 3,
+      "requiredPlane": "EITHER",
+      "evidenceRequirements": [
+        {
+          "sourceKinds": [
+            "EXTERNAL_SYSTEM",
+            "DOCUMENTATION",
+            "CONFIGURATION"
+          ],
+          "minStrength": "E2",
+          "description": "Hosting provider immutable deploys / rollback history; runbook."
+        }
+      ],
+      "scoringRule": {
+        "ABSENT": "Manual in-place deploys; no previous version retained.",
+        "PARTIAL": "Provider rollback possible but migrations irreversible/untracked.",
+        "IMPLEMENTED_UNVERIFIED": "Rollback documented; never exercised.",
+        "IMPLEMENTED_STRONG": "Immutable deploys with provider rollback available.",
+        "VERIFIED": "Rollback exercised with evidence."
+      },
+      "findingTemplates": [
+        {
+          "templateId": "FT-DEPLOYMENT-002-B",
+          "whenStatusIn": [
+            "ABSENT"
+          ],
+          "severity": "MEDIUM",
+          "title": "Not implemented: deployments can be rolled back",
+          "impact": "No implementation was found. If launched without it: Bad releases prolong outages.",
+          "recommendation": "Implement before launch: A known, tested path restores the previous production version (including schema compatibility).",
+          "verificationRequired": {
+            "method": "EXTERNAL_SYSTEM",
+            "minStrength": "E4",
+            "description": "Rollback exercised in staging."
+          }
+        },
+        {
+          "templateId": "FT-DEPLOYMENT-002-A",
+          "whenStatusIn": [
+            "PARTIAL"
+          ],
+          "severity": "MEDIUM",
+          "title": "No reliable rollback path",
+          "impact": "Bad releases prolong outages.",
+          "recommendation": "Use immutable deploys and document/exercise rollback.",
+          "verificationRequired": {
+            "method": "EXTERNAL_SYSTEM",
+            "minStrength": "E4",
+            "description": "Rollback exercised in staging."
+          }
+        }
+      ],
+      "launchBlocker": {
+        "enabled": false
+      }
+    },
+    {
+      "id": "CTL-CONTINUITY-001",
+      "version": "0.1.0",
+      "title": "Backups exist and restore has been tested",
+      "domain": "CONTINUITY",
+      "capabilityRefs": [
+        "infra.backups",
+        "infra.disaster_recovery"
+      ],
+      "objective": "Production data is backed up automatically with a restore that has actually been performed.",
+      "applicability": {
+        "projectTypes": [
+          "SAAS",
+          "AI_SAAS",
+          "MOBILE_APP",
+          "ECOMMERCE",
+          "MARKETPLACE",
+          "FINTECH_TRADING",
+          "INTERNAL_TOOL",
+          "AUTOMATION_BUSINESS"
+        ],
+        "onUnknown": "INCLUDE"
+      },
+      "riskWeight": 5,
+      "requiredPlane": "LIVE",
+      "evidenceRequirements": [
+        {
+          "sourceKinds": [
+            "EXTERNAL_SYSTEM"
+          ],
+          "minStrength": "E4",
+          "description": "Provider backup/PITR settings and last backup time; restore record."
+        }
+      ],
+      "scoringRule": {
+        "ABSENT": "No backups.",
+        "PARTIAL": "Backups exist but retention is inadequate or not covering all stores (e.g. file storage).",
+        "IMPLEMENTED_UNVERIFIED": "Backups claimed or configured in code; provider not checked.",
+        "IMPLEMENTED_STRONG": "Provider confirms automated backups covering all stores.",
+        "VERIFIED": "Provider confirms backups and a restore test is evidenced."
+      },
+      "findingTemplates": [
+        {
+          "templateId": "FT-CONTINUITY-001-B",
+          "whenStatusIn": [
+            "ABSENT"
+          ],
+          "severity": "HIGH",
+          "severityByProjectType": {
+            "FINTECH_TRADING": "CRITICAL",
+            "ECOMMERCE": "CRITICAL"
+          },
+          "title": "Not implemented: backups exist and restore has been tested",
+          "impact": "No implementation was found. If launched without it: Permanent data loss on incident or bad migration.",
+          "recommendation": "Implement before launch: Production data is backed up automatically with a restore that has actually been performed.",
+          "verificationRequired": {
+            "method": "EXTERNAL_SYSTEM",
+            "minStrength": "E4",
+            "description": "Backup settings observed and restore test recorded."
+          }
+        },
+        {
+          "templateId": "FT-CONTINUITY-001-A",
+          "whenStatusIn": [
+            "PARTIAL",
+            "UNVERIFIED"
+          ],
+          "severity": "HIGH",
+          "severityByProjectType": {
+            "FINTECH_TRADING": "CRITICAL",
+            "ECOMMERCE": "CRITICAL"
+          },
+          "title": "Production data recovery not assured",
+          "impact": "Permanent data loss on incident or bad migration.",
+          "recommendation": "Enable automated backups/PITR for all stores and perform a restore test.",
+          "verificationRequired": {
+            "method": "EXTERNAL_SYSTEM",
+            "minStrength": "E4",
+            "description": "Backup settings observed and restore test recorded."
+          }
+        }
+      ],
+      "launchBlocker": {
+        "enabled": true,
+        "whenStatusIn": [
+          "ABSENT"
+        ],
+        "projectTypes": [
+          "SAAS",
+          "AI_SAAS",
+          "ECOMMERCE",
+          "MARKETPLACE",
+          "FINTECH_TRADING"
+        ],
+        "rationale": "Launching customer data without backups risks irrecoverable loss."
+      }
+    },
+    {
+      "id": "CTL-DOCUMENTATION_OS-001",
+      "version": "0.1.0",
+      "title": "Project OS and agent authority files are present and current",
+      "domain": "DOCUMENTATION_OS",
+      "capabilityRefs": [
+        "recovery.os_recovery",
+        "docs.readme"
+      ],
+      "objective": "The project has an agent authority file, project definition, architecture, decisions and current state that reflect reality.",
+      "applicability": {
+        "projectTypes": [
+          "ALL"
+        ],
+        "onUnknown": "INCLUDE"
+      },
+      "riskWeight": 2,
+      "requiredPlane": "REPOSITORY",
+      "evidenceRequirements": [
+        {
+          "sourceKinds": [
+            "GIT_METADATA",
+            "DOCUMENTATION",
+            "COMMAND_OUTPUT"
+          ],
+          "minStrength": "E2",
+          "description": "File presence via git ls-files; staleness vs code; .project-os validation run."
+        }
+      ],
+      "evidenceKindCaps": {
+        "DOCUMENTATION": 70
+      },
+      "scoringRule": {
+        "ABSENT": "No authority/state files.",
+        "PARTIAL": "README only, or OS files stale versus code.",
+        "IMPLEMENTED_UNVERIFIED": "OS files present; accuracy not checked.",
+        "IMPLEMENTED_STRONG": "OS files present and consistent with discovered implementation.",
+        "VERIFIED": "Structured Project OS state validates against upstream schemas."
+      },
+      "findingTemplates": [
+        {
+          "templateId": "FT-DOCUMENTATION_OS-001-B",
+          "whenStatusIn": [
+            "ABSENT"
+          ],
+          "severity": "MEDIUM",
+          "title": "Not implemented: project OS and agent authority files are present and current",
+          "impact": "No implementation was found. If launched without it: AI agents and contributors work from wrong assumptions; recovery cannot be governed.",
+          "recommendation": "Implement before launch: The project has an agent authority file, project definition, architecture, decisions and current state that reflect reality.",
+          "verificationRequired": {
+            "method": "COMMAND",
+            "minStrength": "E4",
+            "description": "Project OS state validates and matches CURRENT snapshot."
+          }
+        },
+        {
+          "templateId": "FT-DOCUMENTATION_OS-001-A",
+          "whenStatusIn": [
+            "PARTIAL"
+          ],
+          "severity": "MEDIUM",
+          "title": "Project OS missing or stale",
+          "impact": "AI agents and contributors work from wrong assumptions; recovery cannot be governed.",
+          "recommendation": "Generate Project OS via 1stStep OS handoff from confirmed audit facts.",
+          "verificationRequired": {
+            "method": "COMMAND",
+            "minStrength": "E4",
+            "description": "Project OS state validates and matches CURRENT snapshot."
+          }
+        }
+      ],
+      "launchBlocker": {
+        "enabled": false
+      }
+    },
+    {
+      "id": "CTL-DOCUMENTATION_OS-002",
+      "version": "0.1.0",
+      "title": "Operational runbooks exist",
+      "domain": "DOCUMENTATION_OS",
+      "capabilityRefs": [
+        "docs.runbooks"
+      ],
+      "objective": "Deploy, rollback, incident, secret rotation and restore procedures are written down.",
+      "applicability": {
+        "projectTypes": [
+          "SAAS",
+          "AI_SAAS",
+          "ECOMMERCE",
+          "MARKETPLACE",
+          "FINTECH_TRADING",
+          "INTERNAL_TOOL",
+          "AUTOMATION_BUSINESS"
+        ],
+        "onUnknown": "INCLUDE"
+      },
+      "riskWeight": 2,
+      "requiredPlane": "REPOSITORY",
+      "evidenceRequirements": [
+        {
+          "sourceKinds": [
+            "DOCUMENTATION"
+          ],
+          "minStrength": "E2",
+          "description": "Runbook files covering listed procedures."
+        }
+      ],
+      "evidenceKindCaps": {
+        "DOCUMENTATION": 70
+      },
+      "scoringRule": {
+        "ABSENT": "No runbooks.",
+        "PARTIAL": "Some procedures documented.",
+        "IMPLEMENTED_UNVERIFIED": "All procedures documented; not exercised.",
+        "IMPLEMENTED_STRONG": "Documented and consistent with current infrastructure.",
+        "VERIFIED": "Procedures exercised with records."
+      },
+      "findingTemplates": [
+        {
+          "templateId": "FT-DOCUMENTATION_OS-002-B",
+          "whenStatusIn": [
+            "ABSENT"
+          ],
+          "severity": "LOW",
+          "title": "Not implemented: operational runbooks exist",
+          "impact": "No implementation was found. If launched without it: Slow, error-prone incident response.",
+          "recommendation": "Implement before launch: Deploy, rollback, incident, secret rotation and restore procedures are written down.",
+          "verificationRequired": {
+            "method": "HUMAN_REVIEW",
+            "minStrength": "E2",
+            "description": "Runbooks reviewed against infra."
+          }
+        },
+        {
+          "templateId": "FT-DOCUMENTATION_OS-002-A",
+          "whenStatusIn": [
+            "PARTIAL"
+          ],
+          "severity": "LOW",
+          "title": "Operational runbooks missing",
+          "impact": "Slow, error-prone incident response.",
+          "recommendation": "Write the missing runbooks.",
+          "verificationRequired": {
+            "method": "HUMAN_REVIEW",
+            "minStrength": "E2",
+            "description": "Runbooks reviewed against infra."
+          }
+        }
+      ],
+      "launchBlocker": {
+        "enabled": false
+      }
+    },
+    {
+      "id": "CTL-DOCUMENTATION_OS-003",
+      "version": "0.1.0",
+      "title": "Developer-facing API/SDK docs and changelog",
+      "domain": "DOCUMENTATION_OS",
+      "capabilityRefs": [
+        "docs.api_docs",
+        "docs.changelog"
+      ],
+      "objective": "Public APIs/SDK/CLI surfaces are documented and versioned with a changelog.",
+      "applicability": {
+        "projectTypes": [
+          "DEVELOPER_TOOL"
+        ],
+        "onUnknown": "EXCLUDE"
+      },
+      "riskWeight": 3,
+      "requiredPlane": "EITHER",
+      "evidenceRequirements": [
+        {
+          "sourceKinds": [
+            "DOCUMENTATION",
+            "SOURCE_CODE",
+            "RUNTIME_PROBE"
+          ],
+          "minStrength": "E2",
+          "description": "Docs vs exported API surface; published docs site."
+        }
+      ],
+      "evidenceKindCaps": {
+        "DOCUMENTATION": 70
+      },
+      "scoringRule": {
+        "ABSENT": "No API docs.",
+        "PARTIAL": "Docs cover a minority of public surface.",
+        "IMPLEMENTED_UNVERIFIED": "Docs exist; coverage unchecked.",
+        "IMPLEMENTED_STRONG": "Docs match exported surface; changelog maintained.",
+        "VERIFIED": "Published docs match released version."
+      },
+      "findingTemplates": [
+        {
+          "templateId": "FT-DOCUMENTATION_OS-003-B",
+          "whenStatusIn": [
+            "ABSENT"
+          ],
+          "severity": "MEDIUM",
+          "title": "Not implemented: developer-facing API/SDK docs and changelog",
+          "impact": "No implementation was found. If launched without it: Adoption friction and support load.",
+          "recommendation": "Implement before launch: Public APIs/SDK/CLI surfaces are documented and versioned with a changelog.",
+          "verificationRequired": {
+            "method": "LIVE_CHECK",
+            "minStrength": "E4",
+            "description": "Published docs match surface."
+          }
+        },
+        {
+          "templateId": "FT-DOCUMENTATION_OS-003-A",
+          "whenStatusIn": [
+            "PARTIAL"
+          ],
+          "severity": "MEDIUM",
+          "title": "Developer docs incomplete",
+          "impact": "Adoption friction and support load.",
+          "recommendation": "Document public surface and maintain a changelog.",
+          "verificationRequired": {
+            "method": "LIVE_CHECK",
+            "minStrength": "E4",
+            "description": "Published docs match surface."
+          }
+        }
+      ],
+      "launchBlocker": {
+        "enabled": false
+      }
+    },
+    {
+      "id": "CTL-BUSINESS_MODEL-001",
+      "version": "0.1.0",
+      "title": "Revenue and cost model are explicit",
+      "domain": "BUSINESS_MODEL",
+      "capabilityRefs": [
+        "business.business_model",
+        "business.cost_model"
+      ],
+      "objective": "How the product makes money and what it costs to serve a customer are stated and plausible given observed infrastructure.",
+      "applicability": {
+        "projectTypes": [
+          "SAAS",
+          "AI_SAAS",
+          "MOBILE_APP",
+          "BROWSER_EXTENSION",
+          "ECOMMERCE",
+          "MARKETPLACE",
+          "DEVELOPER_TOOL",
+          "FINTECH_TRADING",
+          "AUTOMATION_BUSINESS"
+        ],
+        "onUnknown": "INCLUDE"
+      },
+      "riskWeight": 2,
+      "requiredPlane": "EITHER",
+      "evidenceRequirements": [
+        {
+          "sourceKinds": [
+            "DOCUMENTATION",
+            "USER_STATEMENT",
+            "EXTERNAL_SYSTEM"
+          ],
+          "minStrength": "E1",
+          "description": "Model doc/owner statement cross-checked with billing config and infra/AI cost evidence."
+        }
+      ],
+      "evidenceKindCaps": {
+        "DOCUMENTATION": 70,
+        "USER_STATEMENT": 50
+      },
+      "scoringRule": {
+        "ABSENT": "No stated model.",
+        "PARTIAL": "Revenue stated, costs unknown.",
+        "IMPLEMENTED_UNVERIFIED": "Both stated; not cross-checked.",
+        "IMPLEMENTED_STRONG": "Stated model consistent with billing config and cost evidence.",
+        "VERIFIED": "Actual revenue/cost data confirms margin assumptions."
+      },
+      "findingTemplates": [
+        {
+          "templateId": "FT-BUSINESS_MODEL-001-B",
+          "whenStatusIn": [
+            "ABSENT"
+          ],
+          "severity": "MEDIUM",
+          "title": "Not implemented: revenue and cost model are explicit",
+          "impact": "No implementation was found. If launched without it: Growth may increase losses; pricing cannot be validated.",
+          "recommendation": "Implement before launch: How the product makes money and what it costs to serve a customer are stated and plausible given observed infrastructure.",
+          "verificationRequired": {
+            "method": "HUMAN_REVIEW",
+            "minStrength": "E2",
+            "description": "Owner-confirmed model with cost evidence."
+          }
+        },
+        {
+          "templateId": "FT-BUSINESS_MODEL-001-A",
+          "whenStatusIn": [
+            "PARTIAL"
+          ],
+          "severity": "MEDIUM",
+          "title": "Business or cost model undefined",
+          "impact": "Growth may increase losses; pricing cannot be validated.",
+          "recommendation": "Define revenue model and per-customer cost from observed infrastructure.",
+          "verificationRequired": {
+            "method": "HUMAN_REVIEW",
+            "minStrength": "E2",
+            "description": "Owner-confirmed model with cost evidence."
+          }
+        }
+      ],
+      "launchBlocker": {
+        "enabled": false
+      }
+    },
+    {
+      "id": "CTL-PRICING-001",
+      "version": "0.1.0",
+      "title": "Published pricing matches billing configuration",
+      "domain": "PRICING",
+      "capabilityRefs": [
+        "marketing.pricing",
+        "analytics.unit_economics"
+      ],
+      "objective": "Prices shown to users equal prices charged, and plan limits in code match what is sold.",
+      "applicability": {
+        "projectTypes": [
+          "SAAS",
+          "AI_SAAS",
+          "MOBILE_APP",
+          "BROWSER_EXTENSION",
+          "ECOMMERCE",
+          "MARKETPLACE",
+          "DEVELOPER_TOOL",
+          "FINTECH_TRADING"
+        ],
+        "onUnknown": "EXCLUDE"
+      },
+      "riskWeight": 3,
+      "requiredPlane": "LIVE",
+      "evidenceRequirements": [
+        {
+          "sourceKinds": [
+            "RUNTIME_PROBE",
+            "EXTERNAL_SYSTEM"
+          ],
+          "minStrength": "E4",
+          "description": "Live pricing page vs billing provider prices vs entitlement code."
+        }
+      ],
+      "scoringRule": {
+        "ABSENT": "Pricing shown with no corresponding billing config.",
+        "PARTIAL": "Mismatches between page, provider and entitlements.",
+        "IMPLEMENTED_UNVERIFIED": "Consistent in code; live systems not checked.",
+        "IMPLEMENTED_STRONG": "Live page matches provider; entitlement code not traced.",
+        "VERIFIED": "Page, provider and entitlements all consistent."
+      },
+      "findingTemplates": [
+        {
+          "templateId": "FT-PRICING-001-B",
+          "whenStatusIn": [
+            "ABSENT"
+          ],
+          "severity": "HIGH",
+          "title": "Not implemented: published pricing matches billing configuration",
+          "impact": "No implementation was found. If launched without it: Overcharging/undercharging, refunds and trust damage.",
+          "recommendation": "Implement before launch: Prices shown to users equal prices charged, and plan limits in code match what is sold.",
+          "verificationRequired": {
+            "method": "EXTERNAL_SYSTEM",
+            "minStrength": "E4",
+            "description": "Three-way reconciliation passes."
+          }
+        },
+        {
+          "templateId": "FT-PRICING-001-A",
+          "whenStatusIn": [
+            "PARTIAL"
+          ],
+          "severity": "HIGH",
+          "title": "Pricing, billing and entitlements disagree",
+          "impact": "Overcharging/undercharging, refunds and trust damage.",
+          "recommendation": "Reconcile pricing page, provider prices and plan limits.",
+          "verificationRequired": {
+            "method": "EXTERNAL_SYSTEM",
+            "minStrength": "E4",
+            "description": "Three-way reconciliation passes."
+          }
+        }
+      ],
+      "launchBlocker": {
+        "enabled": false
+      }
+    },
+    {
+      "id": "CTL-COMPETITORS-001",
+      "version": "0.1.0",
+      "title": "Competitive landscape is known and current",
+      "domain": "COMPETITORS",
+      "capabilityRefs": [
+        "marketing.competitors"
+      ],
+      "objective": "Direct alternatives, their pricing and differentiation are recorded with sources less than 6 months old.",
+      "applicability": {
+        "projectTypes": [
+          "SAAS",
+          "AI_SAAS",
+          "MOBILE_APP",
+          "BROWSER_EXTENSION",
+          "ECOMMERCE",
+          "MARKETPLACE",
+          "DEVELOPER_TOOL",
+          "FINTECH_TRADING"
+        ],
+        "onUnknown": "INCLUDE"
+      },
+      "riskWeight": 1,
+      "requiredPlane": "EITHER",
+      "evidenceRequirements": [
+        {
+          "sourceKinds": [
+            "DOCUMENTATION",
+            "RUNTIME_PROBE"
+          ],
+          "minStrength": "E2",
+          "description": "Competitor analysis with dated sources; spot-checked live."
+        }
+      ],
+      "evidenceKindCaps": {
+        "DOCUMENTATION": 70
+      },
+      "scoringRule": {
+        "ABSENT": "No competitor awareness recorded.",
+        "PARTIAL": "Names only.",
+        "IMPLEMENTED_UNVERIFIED": "Analysis exists; sources undated/stale.",
+        "IMPLEMENTED_STRONG": "Current, sourced analysis.",
+        "VERIFIED": "Sourced analysis spot-checked against live competitor pages."
+      },
+      "findingTemplates": [
+        {
+          "templateId": "FT-COMPETITORS-001-B",
+          "whenStatusIn": [
+            "ABSENT"
+          ],
+          "severity": "LOW",
+          "title": "Not implemented: competitive landscape is known and current",
+          "impact": "No implementation was found. If launched without it: Positioning and pricing decisions are uninformed.",
+          "recommendation": "Implement before launch: Direct alternatives, their pricing and differentiation are recorded with sources less than 6 months old.",
+          "verificationRequired": {
+            "method": "HUMAN_REVIEW",
+            "minStrength": "E2",
+            "description": "Brief reviewed with dated sources."
+          }
+        },
+        {
+          "templateId": "FT-COMPETITORS-001-A",
+          "whenStatusIn": [
+            "PARTIAL"
+          ],
+          "severity": "LOW",
+          "title": "Competitive landscape unknown",
+          "impact": "Positioning and pricing decisions are uninformed.",
+          "recommendation": "Produce a sourced competitor brief.",
+          "verificationRequired": {
+            "method": "HUMAN_REVIEW",
+            "minStrength": "E2",
+            "description": "Brief reviewed with dated sources."
+          }
+        }
+      ],
+      "launchBlocker": {
+        "enabled": false
+      }
+    },
+    {
+      "id": "CTL-BRAND-001",
+      "version": "0.1.0",
+      "title": "Positioning and messaging are consistent",
+      "domain": "BRAND",
+      "capabilityRefs": [
+        "brand.positioning",
+        "brand.messaging"
+      ],
+      "objective": "The value proposition is stated once and used consistently across site, app and listings.",
+      "applicability": {
+        "projectTypes": [
+          "ALL"
+        ],
+        "onUnknown": "INCLUDE"
+      },
+      "riskWeight": 1,
+      "requiredPlane": "EITHER",
+      "evidenceRequirements": [
+        {
+          "sourceKinds": [
+            "DOCUMENTATION",
+            "RUNTIME_PROBE",
+            "SOURCE_CODE"
+          ],
+          "minStrength": "E2",
+          "description": "Positioning doc vs live copy."
+        }
+      ],
+      "evidenceKindCaps": {
+        "DOCUMENTATION": 70
+      },
+      "scoringRule": {
+        "ABSENT": "No stated positioning; copy contradicts itself.",
+        "PARTIAL": "Positioning exists but surfaces disagree.",
+        "IMPLEMENTED_UNVERIFIED": "Positioning doc; surfaces not compared.",
+        "IMPLEMENTED_STRONG": "Copy in repo consistent with positioning.",
+        "VERIFIED": "Live surfaces consistent."
+      },
+      "findingTemplates": [
+        {
+          "templateId": "FT-BRAND-001-B",
+          "whenStatusIn": [
+            "ABSENT"
+          ],
+          "severity": "LOW",
+          "title": "Not implemented: positioning and messaging are consistent",
+          "impact": "No implementation was found. If launched without it: Lower conversion and confused buyers.",
+          "recommendation": "Implement before launch: The value proposition is stated once and used consistently across site, app and listings.",
+          "verificationRequired": {
+            "method": "LIVE_CHECK",
+            "minStrength": "E4",
+            "description": "Live copy review."
+          }
+        },
+        {
+          "templateId": "FT-BRAND-001-A",
+          "whenStatusIn": [
+            "PARTIAL"
+          ],
+          "severity": "LOW",
+          "title": "Positioning inconsistent or undefined",
+          "impact": "Lower conversion and confused buyers.",
+          "recommendation": "Define positioning and align surfaces.",
+          "verificationRequired": {
+            "method": "LIVE_CHECK",
+            "minStrength": "E4",
+            "description": "Live copy review."
+          }
+        }
+      ],
+      "launchBlocker": {
+        "enabled": false
+      }
+    },
+    {
+      "id": "CTL-SEO_CONTENT-001",
+      "version": "0.1.0",
+      "title": "Technical SEO baseline is live",
+      "domain": "SEO_CONTENT",
+      "capabilityRefs": [
+        "marketing.seo",
+        "marketing.content"
+      ],
+      "objective": "Indexable pages have titles, descriptions, canonical URLs, sitemap, robots and OG metadata in production.",
+      "applicability": {
+        "projectTypes": [
+          "STATIC_WEBSITE",
+          "SAAS",
+          "AI_SAAS",
+          "ECOMMERCE",
+          "MARKETPLACE",
+          "DEVELOPER_TOOL",
+          "FINTECH_TRADING"
+        ],
+        "onUnknown": "INCLUDE"
+      },
+      "riskWeight": 2,
+      "requiredPlane": "LIVE",
+      "evidenceRequirements": [
+        {
+          "sourceKinds": [
+            "RUNTIME_PROBE"
+          ],
+          "minStrength": "E4",
+          "description": "Crawl of confirmed production domain (bounded page count)."
+        }
+      ],
+      "scoringRule": {
+        "ABSENT": "Production blocks indexing or lacks metadata.",
+        "PARTIAL": "Major pages missing metadata/sitemap.",
+        "IMPLEMENTED_UNVERIFIED": "Metadata in code; production not crawled.",
+        "IMPLEMENTED_STRONG": "Crawl shows complete metadata; minor issues.",
+        "VERIFIED": "Crawl clean and search console shows indexing."
+      },
+      "findingTemplates": [
+        {
+          "templateId": "FT-SEO_CONTENT-001-B",
+          "whenStatusIn": [
+            "ABSENT"
+          ],
+          "severity": "MEDIUM",
+          "severityByProjectType": {
+            "STATIC_WEBSITE": "HIGH"
+          },
+          "title": "Not implemented: technical SEO baseline is live",
+          "impact": "No implementation was found. If launched without it: Organic discovery suppressed.",
+          "recommendation": "Implement before launch: Indexable pages have titles, descriptions, canonical URLs, sitemap, robots and OG metadata in production.",
+          "verificationRequired": {
+            "method": "LIVE_CHECK",
+            "minStrength": "E4",
+            "description": "Re-crawl production."
+          }
+        },
+        {
+          "templateId": "FT-SEO_CONTENT-001-A",
+          "whenStatusIn": [
+            "PARTIAL"
+          ],
+          "severity": "MEDIUM",
+          "severityByProjectType": {
+            "STATIC_WEBSITE": "HIGH"
+          },
+          "title": "Technical SEO baseline incomplete",
+          "impact": "Organic discovery suppressed.",
+          "recommendation": "Fix listed crawl issues.",
+          "verificationRequired": {
+            "method": "LIVE_CHECK",
+            "minStrength": "E4",
+            "description": "Re-crawl production."
+          }
+        }
+      ],
+      "launchBlocker": {
+        "enabled": false
+      }
+    },
+    {
+      "id": "CTL-SOCIAL-001",
+      "version": "0.1.0",
+      "title": "Owned social profiles are claimed and linked",
+      "domain": "SOCIAL",
+      "capabilityRefs": [
+        "marketing.socials",
+        "brand.social_kit"
+      ],
+      "objective": "Brand handles on relevant platforms are owned, consistent and linked from the product site.",
+      "applicability": {
+        "projectTypes": [
+          "STATIC_WEBSITE",
+          "SAAS",
+          "AI_SAAS",
+          "MOBILE_APP",
+          "BROWSER_EXTENSION",
+          "ECOMMERCE",
+          "MARKETPLACE",
+          "DEVELOPER_TOOL",
+          "FINTECH_TRADING",
+          "AUTOMATION_BUSINESS"
+        ],
+        "onUnknown": "INCLUDE"
+      },
+      "riskWeight": 1,
+      "requiredPlane": "LIVE",
+      "evidenceRequirements": [
+        {
+          "sourceKinds": [
+            "RUNTIME_PROBE",
+            "USER_ATTESTATION_ARTIFACT"
+          ],
+          "minStrength": "E2",
+          "description": "Public profile pages for user-declared handles."
+        }
+      ],
+      "scoringRule": {
+        "ABSENT": "No owned profiles.",
+        "PARTIAL": "Some handles unclaimed or inconsistent.",
+        "IMPLEMENTED_UNVERIFIED": "Handles listed; not checked.",
+        "IMPLEMENTED_STRONG": "Profiles live and consistent.",
+        "VERIFIED": "Profiles live, consistent, and ownership attested."
+      },
+      "findingTemplates": [
+        {
+          "templateId": "FT-SOCIAL-001-B",
+          "whenStatusIn": [
+            "ABSENT"
+          ],
+          "severity": "LOW",
+          "title": "Not implemented: owned social profiles are claimed and linked",
+          "impact": "No implementation was found. If launched without it: Impersonation risk and lost discovery.",
+          "recommendation": "Implement before launch: Brand handles on relevant platforms are owned, consistent and linked from the product site.",
+          "verificationRequired": {
+            "method": "LIVE_CHECK",
+            "minStrength": "E4",
+            "description": "Profiles fetched."
+          }
+        },
+        {
+          "templateId": "FT-SOCIAL-001-A",
+          "whenStatusIn": [
+            "PARTIAL"
+          ],
+          "severity": "LOW",
+          "title": "Social presence unclaimed or inconsistent",
+          "impact": "Impersonation risk and lost discovery.",
+          "recommendation": "Claim and align handles; link from site.",
+          "verificationRequired": {
+            "method": "LIVE_CHECK",
+            "minStrength": "E4",
+            "description": "Profiles fetched."
+          }
+        }
+      ],
+      "launchBlocker": {
+        "enabled": false
+      }
+    },
+    {
+      "id": "CTL-DISTRIBUTION-001",
+      "version": "0.1.0",
+      "title": "Launch and directory distribution plan exists",
+      "domain": "DISTRIBUTION",
+      "capabilityRefs": [
+        "marketing.directories",
+        "marketing.product_launch"
+      ],
+      "objective": "Relevant launch venues/directories are identified with status (submitted/listed) and assets ready.",
+      "applicability": {
+        "projectTypes": [
+          "SAAS",
+          "AI_SAAS",
+          "MOBILE_APP",
+          "BROWSER_EXTENSION",
+          "DEVELOPER_TOOL",
+          "MARKETPLACE",
+          "ECOMMERCE"
+        ],
+        "onUnknown": "INCLUDE"
+      },
+      "riskWeight": 2,
+      "requiredPlane": "EITHER",
+      "evidenceRequirements": [
+        {
+          "sourceKinds": [
+            "DOCUMENTATION",
+            "RUNTIME_PROBE"
+          ],
+          "minStrength": "E2",
+          "description": "Channel plan; live listing pages."
+        }
+      ],
+      "evidenceKindCaps": {
+        "DOCUMENTATION": 70
+      },
+      "scoringRule": {
+        "ABSENT": "No distribution plan.",
+        "PARTIAL": "Ad-hoc list without status.",
+        "IMPLEMENTED_UNVERIFIED": "Plan with status; listings not checked.",
+        "IMPLEMENTED_STRONG": "Plan with live listings for key venues.",
+        "VERIFIED": "Listings live and referral traffic attributed."
+      },
+      "findingTemplates": [
+        {
+          "templateId": "FT-DISTRIBUTION-001-B",
+          "whenStatusIn": [
+            "ABSENT"
+          ],
+          "severity": "LOW",
+          "title": "Not implemented: launch and directory distribution plan exists",
+          "impact": "No implementation was found. If launched without it: Launch relies on chance discovery.",
+          "recommendation": "Implement before launch: Relevant launch venues/directories are identified with status (submitted/listed) and assets ready.",
+          "verificationRequired": {
+            "method": "LIVE_CHECK",
+            "minStrength": "E4",
+            "description": "Listings observed."
+          }
+        },
+        {
+          "templateId": "FT-DISTRIBUTION-001-A",
+          "whenStatusIn": [
+            "PARTIAL"
+          ],
+          "severity": "LOW",
+          "title": "No distribution plan",
+          "impact": "Launch relies on chance discovery.",
+          "recommendation": "Build a prioritized venue plan (submissions remain approval-required).",
+          "verificationRequired": {
+            "method": "LIVE_CHECK",
+            "minStrength": "E4",
+            "description": "Listings observed."
+          }
+        }
+      ],
+      "launchBlocker": {
+        "enabled": false
+      }
+    },
+    {
+      "id": "CTL-DISTRIBUTION-002",
+      "version": "0.1.0",
+      "title": "Store listing is compliant and current",
+      "domain": "DISTRIBUTION",
+      "capabilityRefs": [
+        "brand.app_store_assets",
+        "brand.screenshots"
+      ],
+      "objective": "App/extension store listing is published or ready, with required privacy disclosures matching actual data use.",
+      "applicability": {
+        "projectTypes": [
+          "MOBILE_APP",
+          "BROWSER_EXTENSION"
+        ],
+        "onUnknown": "EXCLUDE"
+      },
+      "riskWeight": 4,
+      "requiredPlane": "LIVE",
+      "evidenceRequirements": [
+        {
+          "sourceKinds": [
+            "EXTERNAL_SYSTEM",
+            "RUNTIME_PROBE"
+          ],
+          "minStrength": "E4",
+          "description": "Store console/public listing: version, review status, privacy labels."
+        }
+      ],
+      "scoringRule": {
+        "ABSENT": "No listing or rejected.",
+        "PARTIAL": "Listing live but privacy disclosures contradict observed data use.",
+        "IMPLEMENTED_UNVERIFIED": "Listing assets in repo; store not checked.",
+        "IMPLEMENTED_STRONG": "Listing live; disclosures not cross-checked.",
+        "VERIFIED": "Listing live with disclosures matching audited data flows."
+      },
+      "findingTemplates": [
+        {
+          "templateId": "FT-DISTRIBUTION-002-B",
+          "whenStatusIn": [
+            "ABSENT"
+          ],
+          "severity": "HIGH",
+          "title": "Not implemented: store listing is compliant and current",
+          "impact": "No implementation was found. If launched without it: Product cannot be distributed or risks removal.",
+          "recommendation": "Implement before launch: App/extension store listing is published or ready, with required privacy disclosures matching actual data use.",
+          "verificationRequired": {
+            "method": "EXTERNAL_SYSTEM",
+            "minStrength": "E4",
+            "description": "Store shows approved listing."
+          }
+        },
+        {
+          "templateId": "FT-DISTRIBUTION-002-A",
+          "whenStatusIn": [
+            "PARTIAL"
+          ],
+          "severity": "HIGH",
+          "title": "Store listing missing, rejected or non-compliant",
+          "impact": "Product cannot be distributed or risks removal.",
+          "recommendation": "Fix listing and privacy disclosures.",
+          "verificationRequired": {
+            "method": "EXTERNAL_SYSTEM",
+            "minStrength": "E4",
+            "description": "Store shows approved listing."
+          }
+        }
+      ],
+      "launchBlocker": {
+        "enabled": true,
+        "whenStatusIn": [
+          "PARTIAL"
+        ],
+        "projectTypes": [
+          "MOBILE_APP",
+          "BROWSER_EXTENSION"
+        ],
+        "rationale": "Inaccurate store privacy disclosures risk takedown and policy violation."
+      }
+    },
+    {
+      "id": "CTL-GROWTH-001",
+      "version": "0.1.0",
+      "title": "At least one acquisition channel is attributed",
+      "domain": "GROWTH",
+      "capabilityRefs": [
+        "marketing.utm_attribution",
+        "marketing.referrals"
+      ],
+      "objective": "Signups/purchases can be attributed to a source for at least the primary channel.",
+      "applicability": {
+        "projectTypes": [
+          "STATIC_WEBSITE",
+          "SAAS",
+          "AI_SAAS",
+          "MOBILE_APP",
+          "BROWSER_EXTENSION",
+          "ECOMMERCE",
+          "MARKETPLACE",
+          "DEVELOPER_TOOL",
+          "FINTECH_TRADING"
+        ],
+        "onUnknown": "INCLUDE"
+      },
+      "riskWeight": 2,
+      "requiredPlane": "LIVE",
+      "evidenceRequirements": [
+        {
+          "sourceKinds": [
+            "EXTERNAL_SYSTEM",
+            "SOURCE_CODE"
+          ],
+          "minStrength": "E3",
+          "description": "UTM/referral capture in code; analytics shows sourced conversions."
+        }
+      ],
+      "scoringRule": {
+        "ABSENT": "No source capture.",
+        "PARTIAL": "Traffic sources only; conversions unattributed.",
+        "IMPLEMENTED_UNVERIFIED": "Capture in code; data not observed.",
+        "IMPLEMENTED_STRONG": "Attributed conversions observed.",
+        "VERIFIED": "Attribution reconciled with billing/signup records."
+      },
+      "findingTemplates": [
+        {
+          "templateId": "FT-GROWTH-001-B",
+          "whenStatusIn": [
+            "ABSENT"
+          ],
+          "severity": "LOW",
+          "title": "Not implemented: at least one acquisition channel is attributed",
+          "impact": "No implementation was found. If launched without it: Cannot tell which channels work.",
+          "recommendation": "Implement before launch: Signups/purchases can be attributed to a source for at least the primary channel.",
+          "verificationRequired": {
+            "method": "EXTERNAL_SYSTEM",
+            "minStrength": "E4",
+            "description": "Attributed conversions observed."
+          }
+        },
+        {
+          "templateId": "FT-GROWTH-001-A",
+          "whenStatusIn": [
+            "PARTIAL"
+          ],
+          "severity": "LOW",
+          "title": "Acquisition is unattributed",
+          "impact": "Cannot tell which channels work.",
+          "recommendation": "Capture source at signup/purchase.",
+          "verificationRequired": {
+            "method": "EXTERNAL_SYSTEM",
+            "minStrength": "E4",
+            "description": "Attributed conversions observed."
+          }
+        }
+      ],
+      "launchBlocker": {
+        "enabled": false
+      }
+    },
+    {
+      "id": "CTL-SALES-001",
+      "version": "0.1.0",
+      "title": "Leads are captured into a pipeline",
+      "domain": "SALES",
+      "capabilityRefs": [
+        "sales.crm",
+        "sales.pipeline"
+      ],
+      "objective": "Inbound interest (demo/contact/trial) reaches a tracked system with follow-up ownership.",
+      "applicability": {
+        "projectTypes": [
+          "SAAS",
+          "AI_SAAS",
+          "MARKETPLACE",
+          "DEVELOPER_TOOL",
+          "AUTOMATION_BUSINESS"
+        ],
+        "onUnknown": "EXCLUDE"
+      },
+      "riskWeight": 1,
+      "requiredPlane": "EITHER",
+      "evidenceRequirements": [
+        {
+          "sourceKinds": [
+            "SOURCE_CODE",
+            "EXTERNAL_SYSTEM"
+          ],
+          "minStrength": "E3",
+          "description": "Form handlers/integrations; CRM receiving records."
+        }
+      ],
+      "scoringRule": {
+        "ABSENT": "Contact forms go nowhere tracked.",
+        "PARTIAL": "Leads land in email inbox only.",
+        "IMPLEMENTED_UNVERIFIED": "CRM integration in code; not observed.",
+        "IMPLEMENTED_STRONG": "CRM receives leads.",
+        "VERIFIED": "CRM receives leads with owner/follow-up stages."
+      },
+      "findingTemplates": [
+        {
+          "templateId": "FT-SALES-001-B",
+          "whenStatusIn": [
+            "ABSENT"
+          ],
+          "severity": "LOW",
+          "title": "Not implemented: leads are captured into a pipeline",
+          "impact": "No implementation was found. If launched without it: Lost revenue from unanswered interest.",
+          "recommendation": "Implement before launch: Inbound interest (demo/contact/trial) reaches a tracked system with follow-up ownership.",
+          "verificationRequired": {
+            "method": "EXTERNAL_SYSTEM",
+            "minStrength": "E4",
+            "description": "Test lead appears in CRM."
+          }
+        },
+        {
+          "templateId": "FT-SALES-001-A",
+          "whenStatusIn": [
+            "PARTIAL"
+          ],
+          "severity": "LOW",
+          "title": "Leads are not tracked",
+          "impact": "Lost revenue from unanswered interest.",
+          "recommendation": "Route leads into a CRM pipeline.",
+          "verificationRequired": {
+            "method": "EXTERNAL_SYSTEM",
+            "minStrength": "E4",
+            "description": "Test lead appears in CRM."
+          }
+        }
+      ],
+      "launchBlocker": {
+        "enabled": false
+      }
+    },
+    {
+      "id": "CTL-CUSTOMER_SUCCESS-001",
+      "version": "0.1.0",
+      "title": "Users can get help and are onboarded",
+      "domain": "CUSTOMER_SUCCESS",
+      "capabilityRefs": [
+        "customer.support",
+        "customer.onboarding"
+      ],
+      "objective": "A monitored support channel is reachable in-product and new users have an onboarding path.",
+      "applicability": {
+        "projectTypes": [
+          "SAAS",
+          "AI_SAAS",
+          "MOBILE_APP",
+          "BROWSER_EXTENSION",
+          "ECOMMERCE",
+          "MARKETPLACE",
+          "DEVELOPER_TOOL",
+          "FINTECH_TRADING"
+        ],
+        "onUnknown": "INCLUDE"
+      },
+      "riskWeight": 2,
+      "requiredPlane": "EITHER",
+      "evidenceRequirements": [
+        {
+          "sourceKinds": [
+            "RUNTIME_PROBE",
+            "SOURCE_CODE",
+            "USER_STATEMENT"
+          ],
+          "minStrength": "E2",
+          "description": "Support entry points; onboarding flow; owner statement of monitoring."
+        }
+      ],
+      "scoringRule": {
+        "ABSENT": "No support channel.",
+        "PARTIAL": "Support address exists but not in-product; no onboarding.",
+        "IMPLEMENTED_UNVERIFIED": "Channel and onboarding in code; monitoring unknown.",
+        "IMPLEMENTED_STRONG": "Live channel and onboarding observed.",
+        "VERIFIED": "Test ticket answered within stated SLA."
+      },
+      "findingTemplates": [
+        {
+          "templateId": "FT-CUSTOMER_SUCCESS-001-B",
+          "whenStatusIn": [
+            "ABSENT"
+          ],
+          "severity": "MEDIUM",
+          "title": "Not implemented: users can get help and are onboarded",
+          "impact": "No implementation was found. If launched without it: Churn and chargebacks from stuck users.",
+          "recommendation": "Implement before launch: A monitored support channel is reachable in-product and new users have an onboarding path.",
+          "verificationRequired": {
+            "method": "LIVE_CHECK",
+            "minStrength": "E4",
+            "description": "Support path exercised."
+          }
+        },
+        {
+          "templateId": "FT-CUSTOMER_SUCCESS-001-A",
+          "whenStatusIn": [
+            "PARTIAL"
+          ],
+          "severity": "MEDIUM",
+          "title": "No reliable support or onboarding path",
+          "impact": "Churn and chargebacks from stuck users.",
+          "recommendation": "Add in-product support and onboarding.",
+          "verificationRequired": {
+            "method": "LIVE_CHECK",
+            "minStrength": "E4",
+            "description": "Support path exercised."
+          }
+        }
+      ],
+      "launchBlocker": {
+        "enabled": false
+      }
+    },
+    {
+      "id": "CTL-AUTOMATION-001",
+      "version": "0.1.0",
+      "title": "Automations are idempotent, observable and approval-gated",
+      "domain": "AUTOMATION",
+      "capabilityRefs": [
+        "automation.workflow_automation",
+        "automation.approval_workflows",
+        "automation.scheduled_jobs"
+      ],
+      "objective": "Scheduled/triggered workflows handle retries without duplicate side effects, surface failures, and require approval for external actions.",
+      "applicability": {
+        "projectTypes": [
+          "AUTOMATION_BUSINESS",
+          "AI_SAAS",
+          "INTERNAL_TOOL",
+          "FINTECH_TRADING",
+          "SAAS"
+        ],
+        "onUnknown": "EXCLUDE"
+      },
+      "riskWeight": 4,
+      "requiredPlane": "EITHER",
+      "evidenceRequirements": [
+        {
+          "sourceKinds": [
+            "SOURCE_CODE",
+            "CONFIGURATION",
+            "EXTERNAL_SYSTEM"
+          ],
+          "minStrength": "E3",
+          "description": "Job/workflow definitions, idempotency keys, failure alerts, run history."
+        }
+      ],
+      "scoringRule": {
+        "ABSENT": "Automations send external messages/charges with no idempotency or failure visibility.",
+        "PARTIAL": "Some guards; failures silent or duplicates possible.",
+        "IMPLEMENTED_UNVERIFIED": "Guards in code; runs not observed.",
+        "IMPLEMENTED_STRONG": "Idempotency, failure alerts and approvals in code/config.",
+        "VERIFIED": "Run history shows retries without duplicates and alerts on failure."
+      },
+      "findingTemplates": [
+        {
+          "templateId": "FT-AUTOMATION-001-B",
+          "whenStatusIn": [
+            "ABSENT"
+          ],
+          "severity": "HIGH",
+          "title": "Not implemented: automations are idempotent, observable and approval-gated",
+          "impact": "No implementation was found. If launched without it: Duplicate charges/messages, spam and unnoticed business process failure.",
+          "recommendation": "Implement before launch: Scheduled/triggered workflows handle retries without duplicate side effects, surface failures, and require approval for external actions.",
+          "verificationRequired": {
+            "method": "EXTERNAL_SYSTEM",
+            "minStrength": "E4",
+            "description": "Run history observed."
+          }
+        },
+        {
+          "templateId": "FT-AUTOMATION-001-A",
+          "whenStatusIn": [
+            "PARTIAL"
+          ],
+          "severity": "HIGH",
+          "title": "Automations can duplicate or silently fail external actions",
+          "impact": "Duplicate charges/messages, spam and unnoticed business process failure.",
+          "recommendation": "Add idempotency keys, failure alerting and approval gates.",
+          "verificationRequired": {
+            "method": "EXTERNAL_SYSTEM",
+            "minStrength": "E4",
+            "description": "Run history observed."
+          }
+        }
+      ],
+      "launchBlocker": {
+        "enabled": true,
+        "whenStatusIn": [
+          "ABSENT"
+        ],
+        "projectTypes": [
+          "AUTOMATION_BUSINESS"
+        ],
+        "rationale": "Unguarded external side effects are the core risk of automation businesses."
+      }
+    },
+    {
+      "id": "CTL-ANALYTICS-001",
+      "version": "0.1.0",
+      "title": "Activation funnel is instrumented and receiving data",
+      "domain": "ANALYTICS",
+      "capabilityRefs": [
+        "analytics.event_taxonomy",
+        "analytics.funnel",
+        "analytics.product_analytics"
+      ],
+      "objective": "Key funnel events are defined and live analytics shows them arriving.",
+      "applicability": {
+        "projectTypes": [
+          "STATIC_WEBSITE",
+          "SAAS",
+          "AI_SAAS",
+          "MOBILE_APP",
+          "BROWSER_EXTENSION",
+          "ECOMMERCE",
+          "MARKETPLACE",
+          "DEVELOPER_TOOL",
+          "FINTECH_TRADING"
+        ],
+        "onUnknown": "INCLUDE"
+      },
+      "riskWeight": 2,
+      "requiredPlane": "LIVE",
+      "evidenceRequirements": [
+        {
+          "sourceKinds": [
+            "EXTERNAL_SYSTEM"
+          ],
+          "minStrength": "E4",
+          "description": "Analytics connector: event volume per defined event, last 7 days."
+        },
+        {
+          "sourceKinds": [
+            "SOURCE_CODE"
+          ],
+          "minStrength": "E3",
+          "description": "Tracking calls (intent)."
+        }
+      ],
+      "scoringRule": {
+        "ABSENT": "No analytics.",
+        "PARTIAL": "Pageviews only; no funnel events.",
+        "IMPLEMENTED_UNVERIFIED": "Events in code; ingestion unknown.",
+        "IMPLEMENTED_STRONG": "Events arriving; taxonomy undocumented.",
+        "VERIFIED": "Documented taxonomy with all funnel events arriving."
+      },
+      "findingTemplates": [
+        {
+          "templateId": "FT-ANALYTICS-001-B",
+          "whenStatusIn": [
+            "ABSENT"
+          ],
+          "severity": "MEDIUM",
+          "title": "Not implemented: activation funnel is instrumented and receiving data",
+          "impact": "No implementation was found. If launched without it: Cannot diagnose activation or conversion.",
+          "recommendation": "Implement before launch: Key funnel events are defined and live analytics shows them arriving.",
+          "verificationRequired": {
+            "method": "EXTERNAL_SYSTEM",
+            "minStrength": "E4",
+            "description": "Events observed in analytics."
+          }
+        },
+        {
+          "templateId": "FT-ANALYTICS-001-A",
+          "whenStatusIn": [
+            "PARTIAL"
+          ],
+          "severity": "MEDIUM",
+          "title": "Funnel not measurable",
+          "impact": "Cannot diagnose activation or conversion.",
+          "recommendation": "Define event taxonomy and instrument funnel events.",
+          "verificationRequired": {
+            "method": "EXTERNAL_SYSTEM",
+            "minStrength": "E4",
+            "description": "Events observed in analytics."
+          }
+        }
+      ],
+      "launchBlocker": {
+        "enabled": false
+      }
+    },
+    {
+      "id": "CTL-LOCALIZATION-001",
+      "version": "0.1.0",
+      "title": "Internationalization readiness for declared markets",
+      "domain": "LOCALIZATION",
+      "capabilityRefs": [
+        "international.i18n",
+        "international.locale_formatting"
+      ],
+      "objective": "Where multiple markets/languages are declared, strings are externalized and dates/currency are locale-aware.",
+      "applicability": {
+        "projectTypes": [
+          "ALL"
+        ],
+        "onUnknown": "EXCLUDE"
+      },
+      "riskWeight": 1,
+      "requiredPlane": "REPOSITORY",
+      "evidenceRequirements": [
+        {
+          "sourceKinds": [
+            "SOURCE_CODE",
+            "CONFIGURATION"
+          ],
+          "minStrength": "E3",
+          "description": "i18n library usage; hard-coded string and format search."
+        }
+      ],
+      "scoringRule": {
+        "ABSENT": "Declared multi-market but all strings/formats hard-coded.",
+        "PARTIAL": "Partial externalization.",
+        "IMPLEMENTED_UNVERIFIED": "i18n framework present; coverage unknown.",
+        "IMPLEMENTED_STRONG": "Strings externalized; locale formatting used.",
+        "VERIFIED": "Localized builds rendered and checked."
+      },
+      "findingTemplates": [
+        {
+          "templateId": "FT-LOCALIZATION-001-B",
+          "whenStatusIn": [
+            "ABSENT"
+          ],
+          "severity": "LOW",
+          "title": "Not implemented: internationalization readiness for declared markets",
+          "impact": "No implementation was found. If launched without it: Poor experience or blocked expansion in declared markets.",
+          "recommendation": "Implement before launch: Where multiple markets/languages are declared, strings are externalized and dates/currency are locale-aware.",
+          "verificationRequired": {
+            "method": "CODE_REVIEW",
+            "minStrength": "E3",
+            "description": "Hard-coded string search clean."
+          }
+        },
+        {
+          "templateId": "FT-LOCALIZATION-001-A",
+          "whenStatusIn": [
+            "PARTIAL"
+          ],
+          "severity": "LOW",
+          "title": "Not ready for declared markets",
+          "impact": "Poor experience or blocked expansion in declared markets.",
+          "recommendation": "Externalize strings and use locale formatting.",
+          "verificationRequired": {
+            "method": "CODE_REVIEW",
+            "minStrength": "E3",
+            "description": "Hard-coded string search clean."
+          }
+        }
+      ],
+      "launchBlocker": {
+        "enabled": false
+      }
+    },
+    {
+      "id": "CTL-LEGAL_READINESS-001",
+      "version": "0.1.0",
+      "title": "Terms and privacy policy are published and match data practices",
+      "domain": "LEGAL_READINESS",
+      "capabilityRefs": [
+        "business.terms_privacy_readiness"
+      ],
+      "objective": "Terms and privacy policy are live and disclose the processors and data uses the audit observed (incl. AI providers, analytics).",
+      "applicability": {
+        "projectTypes": [
+          "SAAS",
+          "AI_SAAS",
+          "MOBILE_APP",
+          "BROWSER_EXTENSION",
+          "ECOMMERCE",
+          "MARKETPLACE",
+          "DEVELOPER_TOOL",
+          "FINTECH_TRADING",
+          "AUTOMATION_BUSINESS"
+        ],
+        "onUnknown": "INCLUDE"
+      },
+      "riskWeight": 3,
+      "requiredPlane": "LIVE",
+      "evidenceRequirements": [
+        {
+          "sourceKinds": [
+            "RUNTIME_PROBE"
+          ],
+          "minStrength": "E4",
+          "description": "Live policy pages compared to discovered processors."
+        }
+      ],
+      "scoringRule": {
+        "ABSENT": "No terms/privacy policy.",
+        "PARTIAL": "Published but omit observed processors/data uses.",
+        "IMPLEMENTED_UNVERIFIED": "Policy files in repo; live not checked.",
+        "IMPLEMENTED_STRONG": "Live and consistent with observed processors.",
+        "VERIFIED": "Live, consistent, and legally reviewed (attested)."
+      },
+      "findingTemplates": [
+        {
+          "templateId": "FT-LEGAL_READINESS-001-B",
+          "whenStatusIn": [
+            "ABSENT"
+          ],
+          "severity": "HIGH",
+          "title": "Not implemented: terms and privacy policy are published and match data practices",
+          "impact": "No implementation was found. If launched without it: Regulatory and platform-policy exposure.",
+          "recommendation": "Implement before launch: Terms and privacy policy are live and disclose the processors and data uses the audit observed (incl. AI providers, analytics).",
+          "verificationRequired": {
+            "method": "LIVE_CHECK",
+            "minStrength": "E4",
+            "description": "Live policies checked against processor inventory."
+          }
+        },
+        {
+          "templateId": "FT-LEGAL_READINESS-001-A",
+          "whenStatusIn": [
+            "PARTIAL"
+          ],
+          "severity": "HIGH",
+          "title": "Legal policies missing or inaccurate",
+          "impact": "Regulatory and platform-policy exposure.",
+          "recommendation": "Publish accurate terms/privacy covering observed processors; seek legal review.",
+          "verificationRequired": {
+            "method": "LIVE_CHECK",
+            "minStrength": "E4",
+            "description": "Live policies checked against processor inventory."
+          }
+        }
+      ],
+      "launchBlocker": {
+        "enabled": true,
+        "whenStatusIn": [
+          "ABSENT"
+        ],
+        "projectTypes": [
+          "ECOMMERCE",
+          "FINTECH_TRADING",
+          "MOBILE_APP",
+          "BROWSER_EXTENSION",
+          "MARKETPLACE"
+        ],
+        "rationale": "Stores, payment providers and regulators require these before launch."
+      }
+    },
+    {
+      "id": "CTL-LEGAL_READINESS-002",
+      "version": "0.1.0",
+      "title": "Financial/trading disclaimers and regulatory boundaries",
+      "domain": "LEGAL_READINESS",
+      "capabilityRefs": [
+        "business.terms_privacy_readiness",
+        "business.insurance_risk_checklist"
+      ],
+      "objective": "Signals/advice features carry appropriate disclaimers and stay within a stated regulatory boundary (no unlicensed personalized advice or custody).",
+      "applicability": {
+        "projectTypes": [
+          "FINTECH_TRADING"
+        ],
+        "onUnknown": "EXCLUDE"
+      },
+      "riskWeight": 5,
+      "requiredPlane": "EITHER",
+      "evidenceRequirements": [
+        {
+          "sourceKinds": [
+            "RUNTIME_PROBE",
+            "SOURCE_CODE",
+            "USER_ATTESTATION_ARTIFACT"
+          ],
+          "minStrength": "E2",
+          "description": "Disclaimers on signal surfaces (site, alerts, messages); feature review for advice/custody."
+        }
+      ],
+      "scoringRule": {
+        "ABSENT": "No disclaimers; features resemble personalized advice or custody.",
+        "PARTIAL": "Disclaimers on site but not on alerts/messages.",
+        "IMPLEMENTED_UNVERIFIED": "Disclaimers in code; live surfaces not checked.",
+        "IMPLEMENTED_STRONG": "Disclaimers on all live surfaces.",
+        "VERIFIED": "All surfaces covered and regulatory boundary attested by counsel."
+      },
+      "findingTemplates": [
+        {
+          "templateId": "FT-LEGAL_READINESS-002-B",
+          "whenStatusIn": [
+            "ABSENT"
+          ],
+          "severity": "CRITICAL",
+          "title": "Not implemented: financial/trading disclaimers and regulatory boundaries",
+          "impact": "No implementation was found. If launched without it: Regulatory action and user financial harm liability.",
+          "recommendation": "Implement before launch: Signals/advice features carry appropriate disclaimers and stay within a stated regulatory boundary (no unlicensed personalized advice or custody).",
+          "verificationRequired": {
+            "method": "LIVE_CHECK",
+            "minStrength": "E4",
+            "description": "All signal surfaces checked."
+          }
+        },
+        {
+          "templateId": "FT-LEGAL_READINESS-002-A",
+          "whenStatusIn": [
+            "PARTIAL"
+          ],
+          "severity": "CRITICAL",
+          "title": "Trading features lack disclaimers or regulatory boundary",
+          "impact": "Regulatory action and user financial harm liability.",
+          "recommendation": "Add disclaimers to every signal surface and document the regulatory boundary with counsel.",
+          "verificationRequired": {
+            "method": "LIVE_CHECK",
+            "minStrength": "E4",
+            "description": "All signal surfaces checked."
+          }
+        }
+      ],
+      "launchBlocker": {
+        "enabled": true,
+        "whenStatusIn": [
+          "ABSENT",
+          "PARTIAL"
+        ],
+        "projectTypes": [
+          "FINTECH_TRADING"
+        ],
+        "rationale": "Regulatory exposure for financial signals."
+      }
+    },
+    {
+      "id": "CTL-BILLING_CONTINUITY-001",
+      "version": "0.1.0",
+      "title": "Billing webhooks are verified and entitlements idempotent",
+      "domain": "BILLING_CONTINUITY",
+      "capabilityRefs": [
+        "backend.webhooks",
+        "recovery.billing_migration"
+      ],
+      "objective": "Payment webhooks verify signatures, process idempotently, and entitlements derive from provider state.",
+      "applicability": {
+        "projectTypes": [
+          "SAAS",
+          "AI_SAAS",
+          "MOBILE_APP",
+          "BROWSER_EXTENSION",
+          "ECOMMERCE",
+          "MARKETPLACE",
+          "DEVELOPER_TOOL",
+          "FINTECH_TRADING"
+        ],
+        "onUnknown": "EXCLUDE"
+      },
+      "riskWeight": 5,
+      "requiredPlane": "REPOSITORY",
+      "evidenceRequirements": [
+        {
+          "sourceKinds": [
+            "SOURCE_CODE",
+            "TEST_EXECUTION"
+          ],
+          "minStrength": "E3",
+          "description": "Webhook handler signature verification, event-id dedupe, entitlement update logic, tests."
+        }
+      ],
+      "scoringRule": {
+        "ABSENT": "Unverified webhooks or client-side entitlement grants.",
+        "PARTIAL": "Signature verified but no idempotency or missing event types (cancel/refund/past_due).",
+        "IMPLEMENTED_UNVERIFIED": "Handler complete in code; not tested.",
+        "IMPLEMENTED_STRONG": "Complete handler with idempotency traced.",
+        "VERIFIED": "Webhook tests with replayed/out-of-order events pass."
+      },
+      "findingTemplates": [
+        {
+          "templateId": "FT-BILLING_CONTINUITY-001-B",
+          "whenStatusIn": [
+            "ABSENT"
+          ],
+          "severity": "CRITICAL",
+          "title": "Not implemented: billing webhooks are verified and entitlements idempotent",
+          "impact": "No implementation was found. If launched without it: Forged or replayed events grant paid access; cancellations and refunds not enforced.",
+          "recommendation": "Implement before launch: Payment webhooks verify signatures, process idempotently, and entitlements derive from provider state.",
+          "verificationRequired": {
+            "method": "TEST",
+            "minStrength": "E4",
+            "description": "Replay/out-of-order webhook tests pass."
+          }
+        },
+        {
+          "templateId": "FT-BILLING_CONTINUITY-001-A",
+          "whenStatusIn": [
+            "PARTIAL"
+          ],
+          "severity": "CRITICAL",
+          "title": "Billing webhooks unverified or non-idempotent",
+          "impact": "Forged or replayed events grant paid access; cancellations and refunds not enforced.",
+          "recommendation": "Verify signatures, dedupe by event id, handle full lifecycle events, add replay tests.",
+          "verificationRequired": {
+            "method": "TEST",
+            "minStrength": "E4",
+            "description": "Replay/out-of-order webhook tests pass."
+          }
+        }
+      ],
+      "launchBlocker": {
+        "enabled": true,
+        "whenStatusIn": [
+          "ABSENT",
+          "PARTIAL"
+        ],
+        "projectTypes": [
+          "ALL"
+        ],
+        "rationale": "Revenue and entitlement integrity."
+      }
+    },
+    {
+      "id": "CTL-BILLING_CONTINUITY-002",
+      "version": "0.1.0",
+      "title": "Live billing configuration matches code",
+      "domain": "BILLING_CONTINUITY",
+      "capabilityRefs": [
+        "recovery.billing_migration"
+      ],
+      "objective": "Live provider webhook endpoints, subscribed events, products and prices match what the code expects in production.",
+      "applicability": {
+        "projectTypes": [
+          "SAAS",
+          "AI_SAAS",
+          "MOBILE_APP",
+          "BROWSER_EXTENSION",
+          "ECOMMERCE",
+          "MARKETPLACE",
+          "DEVELOPER_TOOL",
+          "FINTECH_TRADING"
+        ],
+        "onUnknown": "EXCLUDE"
+      },
+      "riskWeight": 4,
+      "requiredPlane": "LIVE",
+      "evidenceRequirements": [
+        {
+          "sourceKinds": [
+            "EXTERNAL_SYSTEM"
+          ],
+          "minStrength": "E4",
+          "description": "Restricted read-only provider key: endpoints, enabled events, price ids (live mode)."
+        }
+      ],
+      "scoringRule": {
+        "ABSENT": "No live endpoint for production.",
+        "PARTIAL": "Endpoint exists but events/prices mismatch code.",
+        "IMPLEMENTED_UNVERIFIED": "Code expectations known; provider not connected.",
+        "IMPLEMENTED_STRONG": "Live config matches code; delivery failures present.",
+        "VERIFIED": "Live config matches and recent deliveries succeed."
+      },
+      "findingTemplates": [
+        {
+          "templateId": "FT-BILLING_CONTINUITY-002-B",
+          "whenStatusIn": [
+            "ABSENT"
+          ],
+          "severity": "HIGH",
+          "title": "Not implemented: live billing configuration matches code",
+          "impact": "No implementation was found. If launched without it: Payments succeed without entitlements, or subscriptions never end.",
+          "recommendation": "Implement before launch: Live provider webhook endpoints, subscribed events, products and prices match what the code expects in production.",
+          "verificationRequired": {
+            "method": "EXTERNAL_SYSTEM",
+            "minStrength": "E4",
+            "description": "Provider config and delivery history observed."
+          }
+        },
+        {
+          "templateId": "FT-BILLING_CONTINUITY-002-A",
+          "whenStatusIn": [
+            "PARTIAL",
+            "UNVERIFIED"
+          ],
+          "severity": "HIGH",
+          "title": "Live billing configuration diverges from code or is unverified",
+          "impact": "Payments succeed without entitlements, or subscriptions never end.",
+          "recommendation": "Reconcile provider configuration with code expectations (change requires HIGH_RISK_APPROVAL).",
+          "verificationRequired": {
+            "method": "EXTERNAL_SYSTEM",
+            "minStrength": "E4",
+            "description": "Provider config and delivery history observed."
+          }
+        }
+      ],
+      "launchBlocker": {
+        "enabled": false
+      }
+    },
+    {
+      "id": "CTL-MIGRATION_CONTINUITY-001",
+      "version": "0.1.0",
+      "title": "Legacy users, data and entitlements are preserved",
+      "domain": "MIGRATION_CONTINUITY",
+      "capabilityRefs": [
+        "recovery.legacy_user_continuity",
+        "recovery.data_migration"
+      ],
+      "objective": "When replacing a system, existing users, data, subscriptions and integrations have a verified migration path.",
+      "applicability": {
+        "projectTypes": [
+          "ALL"
+        ],
+        "onUnknown": "RAISE_DECISION"
+      },
+      "riskWeight": 4,
+      "requiredPlane": "EITHER",
+      "evidenceRequirements": [
+        {
+          "sourceKinds": [
+            "SOURCE_CODE",
+            "EXTERNAL_SYSTEM",
+            "COMMAND_OUTPUT"
+          ],
+          "minStrength": "E3",
+          "description": "Migration scripts, count reconciliation (aggregates only), legacy processor subscriptions."
+        }
+      ],
+      "scoringRule": {
+        "ABSENT": "Replacement planned/live with no migration path.",
+        "PARTIAL": "Data migrated but entitlements/auth/integrations not.",
+        "IMPLEMENTED_UNVERIFIED": "Migration scripts exist; not dry-run.",
+        "IMPLEMENTED_STRONG": "Dry-run reconciliation matches aggregates.",
+        "VERIFIED": "Production reconciliation confirms users/entitlements preserved."
+      },
+      "findingTemplates": [
+        {
+          "templateId": "FT-MIGRATION_CONTINUITY-001-B",
+          "whenStatusIn": [
+            "ABSENT"
+          ],
+          "severity": "HIGH",
+          "title": "Not implemented: legacy users, data and entitlements are preserved",
+          "impact": "No implementation was found. If launched without it: Existing customers lose access, data or paid entitlements.",
+          "recommendation": "Implement before launch: When replacing a system, existing users, data, subscriptions and integrations have a verified migration path.",
+          "verificationRequired": {
+            "method": "EXTERNAL_SYSTEM",
+            "minStrength": "E4",
+            "description": "Reconciliation report on production aggregates."
+          }
+        },
+        {
+          "templateId": "FT-MIGRATION_CONTINUITY-001-A",
+          "whenStatusIn": [
+            "PARTIAL"
+          ],
+          "severity": "HIGH",
+          "title": "Legacy continuity not assured",
+          "impact": "Existing customers lose access, data or paid entitlements.",
+          "recommendation": "Plan and dry-run migration with aggregate reconciliation.",
+          "verificationRequired": {
+            "method": "EXTERNAL_SYSTEM",
+            "minStrength": "E4",
+            "description": "Reconciliation report on production aggregates."
+          }
+        }
+      ],
+      "launchBlocker": {
+        "enabled": false
+      }
+    },
+    {
+      "id": "CTL-RELEASE_READINESS-001",
+      "version": "0.1.0",
+      "title": "Release gates evaluated for the current release",
+      "domain": "RELEASE_READINESS",
+      "capabilityRefs": [
+        "quality.release_gates",
+        "docs.release_notes"
+      ],
+      "objective": "The release candidate has recorded gate results (tests, security, rollback, monitoring) and release notes.",
+      "applicability": {
+        "projectTypes": [
+          "ALL"
+        ],
+        "onUnknown": "INCLUDE"
+      },
+      "riskWeight": 3,
+      "requiredPlane": "EITHER",
+      "evidenceRequirements": [
+        {
+          "sourceKinds": [
+            "COMMAND_OUTPUT",
+            "EXTERNAL_SYSTEM",
+            "DOCUMENTATION"
+          ],
+          "minStrength": "E2",
+          "description": "Gate records, CI status for release commit, release notes."
+        }
+      ],
+      "scoringRule": {
+        "ABSENT": "No release process.",
+        "PARTIAL": "Checklist exists; not applied to current release.",
+        "IMPLEMENTED_UNVERIFIED": "Gates recorded without evidence.",
+        "IMPLEMENTED_STRONG": "Gates recorded with evidence for current release.",
+        "VERIFIED": "Gates evidenced and production post-release checks recorded."
+      },
+      "findingTemplates": [
+        {
+          "templateId": "FT-RELEASE_READINESS-001-B",
+          "whenStatusIn": [
+            "ABSENT"
+          ],
+          "severity": "MEDIUM",
+          "title": "Not implemented: release gates evaluated for the current release",
+          "impact": "No implementation was found. If launched without it: Known risks ship without a decision record.",
+          "recommendation": "Implement before launch: The release candidate has recorded gate results (tests, security, rollback, monitoring) and release notes.",
+          "verificationRequired": {
+            "method": "HUMAN_REVIEW",
+            "minStrength": "E2",
+            "description": "Gate record reviewed for next release."
+          }
+        },
+        {
+          "templateId": "FT-RELEASE_READINESS-001-A",
+          "whenStatusIn": [
+            "PARTIAL"
+          ],
+          "severity": "MEDIUM",
+          "title": "Release not gated",
+          "impact": "Known risks ship without a decision record.",
+          "recommendation": "Adopt evidence-backed release gates.",
+          "verificationRequired": {
+            "method": "HUMAN_REVIEW",
+            "minStrength": "E2",
+            "description": "Gate record reviewed for next release."
+          }
+        }
+      ],
+      "launchBlocker": {
+        "enabled": false
+      }
+    }
+  ]
+}

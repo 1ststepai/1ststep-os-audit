@@ -1,0 +1,15 @@
+{
+  "product": "1stStep OS Audit & Recovery",
+  "parent": "1stStep OS / 1stStep.ai",
+  "version": "0.1.0",
+  "phase": 0,
+  "status": "FOUNDATION_COMPLETE_G1_PENDING_RATIFICATION",
+  "schemaVersion": "0.1.0",
+  "controlRegistryVersion": "0.1.0",
+  "scoringModelVersion": "0.1.0",
+  "projectTypeProfilesVersion": "0.1.0",
+  "upstreamLock": ".project-os-audit/upstream-lock.json",
+  "immutableBaseline": true,
+  "findingIdsImmutable": true,
+  "auditBeforeRepair": true
+}
