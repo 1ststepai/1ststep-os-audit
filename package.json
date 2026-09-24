@@ -1,6 +1,6 @@
 {
   "name": "1ststep-os-audit",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "type": "module",
   "description": "1stStep OS Audit & Recovery — deterministic audit engine and CLI",
@@ -19,10 +19,10 @@
     "check": "npm run typecheck && npm test && npm run check:free-cost"
   },
   "dependencies": {
-    "ajv": "8.20.0"
+    "ajv": "8.20.0",
+    "typescript": "5.9.3"
   },
   "devDependencies": {
-    "@types/node": "24.13.4",
-    "typescript": "5.9.3"
+    "@types/node": "24.13.4"
   }
 }

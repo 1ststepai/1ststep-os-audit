@@ -2,7 +2,7 @@
   "gate": "FREE-AUDIT-ZERO-METERED-COST",
   "version": "0.1.0",
   "entry": "engine/src/free-cli.ts",
-  "allowedExternalImports": ["ajv/dist/2020.js"],
+  "allowedExternalImports": ["ajv/dist/2020.js", "typescript"],
   "networkEgress": "DENY_ALL",
   "externalPaidApiCostUsd": 0,
   "forbiddenPackages": ["openai", "@anthropic-ai/sdk", "@google/generative-ai", "@google/genai", "@google-cloud/vertexai", "cohere-ai", "@pinecone-database/pinecone", "@voyageai/voyageai", "@tavily/core", "serpapi", "exa-js"],

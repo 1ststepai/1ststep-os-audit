@@ -37,6 +37,9 @@ test("FREE-AUDIT-ZERO-METERED-COST rejects paid dependencies, provider config an
   assert.equal(result.status, "FAIL");
   assert.ok(result.errors.some((e) => e.includes("forbidden metered dependency")));
   assert.ok(result.errors.some((e) => e.includes("unreviewed external import")));
+  // Valid imports need not have whitespace after `from`; string literals are not imports.
+  writeFileSync(join(root, "engine/src/free-cli.ts"), 'import {x} from"unreviewed-package"; const word = "from";');
+  assert.ok(freeCostGate(root).errors.some((e) => e.includes("unreviewed external import unreviewed-package")));
 });
 
 test("free audit uses captured offline evidence, emits conservative findings, and never attempts egress", () => {
@@ -45,6 +48,8 @@ test("free audit uses captured offline evidence, emits conservative findings, an
   writeFileSync(join(target, "package.json"), JSON.stringify({ name: "synthetic", scripts: { build: "echo build" } }));
   writeFileSync(join(target, "index.html"), "<!doctype html><html><head><!-- <title>fake</title> --></head><body><div>hello</div></body></html>");
   writeFileSync(join(target, ".env.production"), "SYNTHETIC_SECRET_DO_NOT_PERSIST=sentinel\n");
+  mkdirSync(join(target, "app/api/example"), { recursive: true });
+  writeFileSync(join(target, "app/api/example/route.ts"), "export function GET() { return db.from('fixture').select('*'); }");
   git(target, "init", "-q", "-b", "main"); git(target, "add", "-A"); git(target, "commit", "-q", "-m", "synthetic");
   const blocked = () => { throw new Error("NETWORK ATTEMPTED IN FREE AUDIT"); };
   const oldFetch = globalThis.fetch, oldHttp = http.request, oldHttps = https.request, oldNet = net.connect, oldTls = tls.connect;
@@ -80,6 +85,7 @@ test("free audit uses captured offline evidence, emits conservative findings, an
   assert.equal(result!.baseline.storage.gitBundleObject, undefined);
   assert.ok(result!.baseline.storage.fullArchiveObject);
   assert.equal(result!.status, "PARTIAL / NOT ASSESSED");
+  assert.equal(result!.sourceReview.candidates.length, 1);
 });
 
 test("non-Git project never gets a fabricated commit or dirty-worktree finding", () => {

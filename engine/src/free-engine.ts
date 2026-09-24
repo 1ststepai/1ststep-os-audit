@@ -10,8 +10,9 @@ import { discover } from "./discover.ts";
 import { findingFingerprint } from "./lifecycle.ts";
 import { getObject, putObject } from "./store.ts";
 import { type Json, loadJson, nowIso, shaJson } from "./util.ts";
+import { reviewSources } from "./source-review.ts";
 
-export const FREE_ENGINE_VERSION = "0.1.0";
+export const FREE_ENGINE_VERSION = "0.2.0";
 const TEMPLATE_SUFFIX: Record<string, string> = {
   AGENT_FILE: "B", DECISION_FILE: "C", RELEASE_FILE: "B", TEST_SCRIPT: "B", TRACKED_ENV: "B",
   HTML_TITLE: "B", HTML_CANONICAL: "C", HTML_LANG: "B", HTML_MAIN: "C",
@@ -20,7 +21,7 @@ const SEVERITY: Record<string, number> = { HIGH: 0, MEDIUM: 1, LOW: 2, INFO: 3 }
 const PATHS: Record<string, RegExp> = {
   AGENT_FILE: /^(AGENTS|CLAUDE)\.md$/i,
   DECISION_FILE: /^(DECISIONS\.md|docs\/architecture\/decision-log\.md|architecture\/decisions\/[^/]+\.md)$/i,
-  RELEASE_FILE: /^(RELEASE\.md|docs\/[^/]*release[^/]*\.md|docs\/production-readiness\/RELEASE_EXECUTION_PLAN\.md|gates\/[^/]*release[^/]*\.md)$/i,
+  RELEASE_FILE: /^(RELEASE\.md|GO[_-]LIVE\.md|docs\/(?:[^/]+\/)*[^/]*(?:release|go[_-]live)[^/]*\.md|gates\/[^/]*release[^/]*\.md)$/i,
   CI_WORKFLOW: /^(\.github\/workflows\/[^/]+\.ya?ml|\.gitlab-ci\.yml|bitbucket-pipelines\.yml)$/i,
 };
 const RULES_PATH = resolve(REPO_ROOT, ".project-os-audit/free-rules.json");
@@ -51,7 +52,8 @@ export function loadFreeRules(path = RULES_PATH) {
 
 function trackedSensitive(root: string): string[] {
   const paths = execFileSync("git", ["-C", root, "ls-files", "-z", "--cached"], { env: { ...process.env, GIT_OPTIONAL_LOCKS: "0", GIT_TERMINAL_PROMPT: "0" }, stdio: ["ignore", "pipe", "ignore"] }).toString("utf8").split("\0");
-  return paths.filter((p) => /(^|\/)(\.env($|\.(?!example$|sample$|template$))|[^/]*\.(pem|key|p12|pfx|jks|keystore)$|id_(rsa|dsa|ecdsa|ed25519)$|credentials(\.json)?$|secrets?\.(json|ya?ml|toml)$)/i.test(p)).sort();
+  // Template filenames are not credentials. This exemption never reads or publishes their values.
+  return paths.filter((p) => !/(^|\/)\.env(?:\.[^/]+)*\.(example|sample|template)$/i.test(p) && /(^|\/)(\.env($|\.)|[^/]*\.(pem|key|p12|pfx|jks|keystore)$|id_(rsa|dsa|ecdsa|ed25519)$|credentials(\.json)?$|secrets?\.(json|ya?ml|toml)$)/i.test(p)).sort();
 }
 
 export function runFreeAudit(input: { path: string; targetId: string; home: string }) {
@@ -124,8 +126,8 @@ export function runFreeAudit(input: { path: string; targetId: string; home: stri
       if (cap.fingerprint.vcs === "GIT") {
         if (postTracked!.length) for (const p of postTracked!) {
           const id = addEvidence(r, `Git tracks sensitive-configuration filename ${p}; contents and validity were not examined.`, undefined);
-          if (id) { result.evidenceIds.push(id); result.findingIds.push(addFinding(r, id, "HIGH", { type: "FILE", ref: p }, "A sensitive-configuration filename is tracked; whether it contains a live secret is UNKNOWN.")); result.status = "FINDING"; }
-        } else record(addEvidence(r, "No tracked sensitive-configuration filenames matched this bounded path check; no secret scan ran.", undefined), "Path check only; secret contents/history not assessed.");
+          if (id) { result.evidenceIds.push(id); result.findingIds.push(addFinding(r, id, "HIGH", { type: "FILE", ref: p }, "A sensitive-configuration filename is tracked; whether it contains a live secret is UNKNOWN.")); result.status = "FINDING"; result.reason = "Tracked sensitive filename candidates; contents/history not assessed. Template names are excluded, not verified safe."; }
+        } else record(addEvidence(r, "No tracked sensitive-configuration filenames matched this bounded path check; no secret scan ran.", undefined), "Path check only; secret contents/history not assessed. Template names are excluded, not verified safe.");
       }
     } else if (r.detector in PATHS) {
       const hits = cap.entries.filter((e) => PATHS[r.detector].test(e.path));
@@ -171,6 +173,7 @@ export function runFreeAudit(input: { path: string; targetId: string; home: stri
     lineStart: e.locator?.lineStart ?? null, lineEnd: e.locator?.lineEnd ?? null, configKey: null, commandId: e.locator?.commandId ?? null,
     repositoryMetadata: e.sourceKind === "GIT_METADATA" ? { commandId: e.locator?.commandId } : null, testResult: null,
     ruleOutput: e.collector.actorId, timestamp: e.collectedAt, redacted: true }));
+  const sourceReview = reviewSources(cap.entries, (hash) => getObject(home, hash));
   const cpu = cpuUsage(cpuStart), durationMs = Math.round(performance.now() - started);
   const cost = { filesProcessed: cap.fingerprint.contentManifest.fileCount, bytesProcessed: cap.fingerprint.contentManifest.totalBytes, runtimeMs: durationMs,
     peakMemoryBytes: memoryUsage().rss, cpuDurationMs: Math.round((cpu.user + cpu.system) / 1000), storageUsedBytes: null, networkBytes: 0,
@@ -183,6 +186,6 @@ export function runFreeAudit(input: { path: string; targetId: string; home: stri
     auditEngineVersion: FREE_ENGINE_VERSION, ruleSetVersion: registry.ruleSetVersion, baselineId: baseline.id,
     identityStrength: cap.fingerprint.vcs === "GIT" ? "LOCAL_GIT" : "WEAK_NON_GIT" };
   return { status: "PARTIAL / NOT ASSESSED", targetId: input.targetId, sourcePath: root, baseline, baselineIdentity, ruleSetVersion: registry.ruleSetVersion,
-    rules: results, evidence, evidenceViews, findings, findingViews, priorities, recommendations, cost, cacheFingerprint: fingerprint,
+    rules: results, evidence, evidenceViews, findings, findingViews, priorities, recommendations, sourceReview, cost, cacheFingerprint: fingerprint,
     zeroCostGate: "PASS_STATIC_POLICY_AND_OFFLINE_EXECUTION", limitations: ["Not a finalized AuditRun or customer report.", "Static source only; no runtime, provider, private repository or business-quality claims.", "No paid API path; infrastructure is not free."] };
 }
