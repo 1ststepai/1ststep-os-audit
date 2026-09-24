@@ -38,7 +38,7 @@ Existing Project
 Requires Node.js 24+ and Git. Clone the public companion contracts alongside this repository at the verified revision. The directory name `1stStep OS` matters because the contract lock resolves that sibling path:
 
 ```sh
-git clone https://github.com/1ststepai/1ststep-os.git "1stStep OS"
+git clone -c core.autocrlf=false https://github.com/1ststepai/1ststep-os.git "1stStep OS"
 git -C "1stStep OS" checkout e8580728e9bbb71eb39e021658b091de47d49709
 git clone https://github.com/1ststepai/1ststep-os-audit.git
 cd 1ststep-os-audit
@@ -46,6 +46,8 @@ git checkout v0.2.0
 npm ci
 npm run check
 ```
+
+The companion clone disables line-ending conversion so its exact-byte contract hashes match on Windows as well as Unix. Do not re-pin hashes merely to silence an installation error.
 
 The audit itself runs locally without model/API calls. Installation requires network access to GitHub and npm. Do not run the audited project's commands. From this repository, replace the example paths with your target and a separate output directory:
 
